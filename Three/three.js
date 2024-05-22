@@ -42,15 +42,19 @@ camera.position.setX(30);
 
 // }, 1000);
 
-const pointLight = new THREE.PointLight(0xffffff, 10, 500, 2)
+const pointLight = new THREE.PointLight(0xffffff, 10, 500, 0);
 pointLight.castShadow = true;
 pointLight.position.set( -100, 50, 100 )
 
 //Set up shadow properties for the light
-//pointLight.shadow.mapSize.width = 700; // default
-//pointLight.shadow.mapSize.height = 700; // default
+// pointLight.shadow.mapSize.width = 700; // default
+// pointLight.shadow.mapSize.height = 700; // default
+// pointLight.shadow.camera.near = 0.5; // default
+// pointLight.shadow.camera.far = 1; // default
+pointLight.shadow.mapSize.width = 512; // default
+pointLight.shadow.mapSize.height = 512; // default
 pointLight.shadow.camera.near = 0.5; // default
-pointLight.shadow.camera.far = 1; // default
+pointLight.shadow.camera.far = 500; // default
 
 const ambientLight = new THREE.AmbientLight(0xffffff);
 scene.add(pointLight, ambientLight);
@@ -80,6 +84,8 @@ const oilWellLoader = new GLTFLoader(loadingManager); oilWellLoader.load('../ass
   gltf.scene.position.z = 0;
   gltf.scene.rotation.y = -1.57;
   gltf.scene.name = "OilWell";
+  gltf.castShadow = true;
+  gltf.receiveShadow = true;
   gltf.scene.traverse( function( node ) {
 
     //  node.castShadow = true; 
@@ -117,7 +123,7 @@ const moon = new THREE.Mesh(
 moon.position.y = 75;
 moon.position.x = 150;
 moon.position.z = -200;
-moon.castShadow = true;
+moon.castShadow = false;
 moon.receiveShadow = true;
 moon.name = "Moon";
 scene.add(moon);
@@ -304,7 +310,7 @@ function centerCamera(seconds){
 function focusPipeAnimation(pipeNumber){
   let cameraZ = 1;
 
-  if (pipeNumber == "moon"){
+  if (pipeNumber.toLowerCase() == "moon"){
     cameraZ = -225;
     focusPipe = scene.getObjectByName("Moon");
   }
