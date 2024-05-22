@@ -82,8 +82,8 @@ const oilWellLoader = new GLTFLoader(loadingManager); oilWellLoader.load('../ass
   gltf.scene.name = "OilWell";
   gltf.scene.traverse( function( node ) {
 
-     node.castShadow = true; 
-     node.receiveShadow = true;
+    //  node.castShadow = true; 
+    //  node.receiveShadow = true;
 
 } );
 scene.add( gltf.scene);
@@ -174,21 +174,21 @@ function addPipe(pipeDataList){
   const font = textLoader.load(
     '../assets/fonts/Heebo Black_Regular.json',
 
-    function (font){
-      console.log(font);
-    },
-    function ( xhr ) {
-      console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
-    },
-    function (err){
-      console.log('An error happened');
-    }
+    // function (font){
+    //   console.log(font);
+    // },
+    // function ( xhr ) {
+    //   console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+    // },
+    // function (err){
+    //   console.log('An error happened');
+    // }
   );
   textLoader.load('../assets/fonts/Heebo Black_Regular.json', function ( font ){
     const geometryText = new TextGeometry( 'Pipe #'+ pipeDataList.pipeNumber, {
       font: font,
       size: .12,
-      height: .00125,
+      depth: .00125,
       curveSegments: .01,
       bevelEnabled: true,
       bevelThickness: .0022,
@@ -210,7 +210,7 @@ function addPipe(pipeDataList){
       , {
       font: font,
       size: .05,
-      height: .0005,
+      depth: .0005,
       curveSegments: .01,
       bevelEnabled: true,
       bevelThickness: .0022,
@@ -398,7 +398,7 @@ function groupColors(color){
       const geometryText = new TextGeometry( clone.name, {
         font: font,
         size: .1,
-        height: .00125,
+        depth: .00125,
         curveSegments: .01,
         bevelEnabled: true,
         bevelThickness: .0022,

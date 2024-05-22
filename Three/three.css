@@ -29,7 +29,7 @@
 }
 
 .controls{
-  z-index: 99999; 
+  z-index: 6; 
   position: relative;
   display: flex;
   flex-direction: row;

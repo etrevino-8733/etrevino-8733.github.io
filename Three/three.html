@@ -32,6 +32,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <link rel="stylesheet" href="three.css" asp-append-version="true"/>
+    <script defer type="text/javascript" src="../libraries/TopNav/TopNav.js"></script>
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
     <main>
@@ -42,6 +44,10 @@
           <progress id="progress-bar" value="0" max="100"></progress>
       </div>
       <section>
+        <div style="color: white;">
+          <et-top-nav nav-items='[{"name": "Home", "link": "../index.html"},{"name": "Projects", "link": "../index.html#projects"}]'>
+          </et-top-nav>
+        </div>
         <div class="controls">
           <div>
             <button class="glow-on-hover" id="showGraphBtn">Show Graph</button>

@@ -8,31 +8,16 @@
     <script type="text/javascript" src="scripts.js"></script>
     <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com/455847c679.js" crossorigin="anonymous"></script>
+    <script defer type="text/javascript" src="libraries/TopNav/TopNav.js"></script>
 </head>
 <body>
     <header class="header">
-        <div class="collapsible-nav">
-            <button class="et-button collapsible-nav-btn"><i class="fa fa-solid fa-bars"></i></button>
-            <nav class="collapsible-nav-content">
-                <ul>
-                    <li ><a class="nav-button et-button" href="index.html">Home</a></li>
-                    <li ><a class="nav-button et-button" href="#projects">Projects</a></li>
-                    <!-- <li ><a class="nav-button et-button" href="#contactMe">Contact</a></li> -->
-                </ul>
-            </nav>
-        </div>
-        <div id="logoSmallBox">
-            <span>ET Tech</span>
-        </div>
-        <nav class="main-nav">
-            <ul>
-                <li ><a class="nav-button et-button" href="index.html">Home</a></li>
-                <li ><a class="nav-button et-button" href="#projects">Projects</a></li>
-                <!-- <li ><a class="nav-button et-button" href="#contactMe">Contact</a></li> -->
-            </ul>
-        </nav>
+        <et-top-nav nav-items='[{"name": "Home", "link": "index.html"},{"name": "Projects", "link": "#projects"}]'>
+        </et-top-nav>
     </header>
     <section>
+    </section>
+    <section>        
         <h1>About Me</h1>
         <div class="card">
             <p>Hi, my name is Emmanuel Trevino.
@@ -48,7 +33,7 @@
             <p>This is a feature from the software software I build for an oil company that specializes in scanning and inspecting pipes used in oil wells.  
                 My software helped the client manage and share detaild data of the pitting and rodware for each pipe they scaned at each location. 
                 The software also allowed my client to share the scan data with their customers. Each of their customers had an account on the web application where they could request scan jobs, view invoices through an integration with Quickbooks, and generate reports for each of their well locations.</p>
-            <a class="project-btn" href="./Three/three.html" target="_blank">View Feature</a>
+            <a class="project-btn" href="./Three/three.html">View Feature</a>
         </div>
     </section>
     <section>
@@ -92,23 +77,4 @@
             </div>
         </div>
     </section>
-    <!-- <section id="contactMe">
-        <h1>Contact</h1>
-        <div class="card">
-            <p>If you would like to get in touch with me, please feel free to send me an email at 
-                <a href="mailto:etrevino8733@gmail.com">etrevino8733@gmail.com</a>
-            </p>
-        </div>
-    </section>
-    <section>
-        <h1>Resume</h1>
-        <div id="desktop-res" class="card">
-            <embed class="pdf" 
-            src="assets/EmmanuelTrevino_SoftwareDeveloper.pdf"
-            width="100%" height="500">
-        </div>
-        <div id="mobile-res" class="card">
-            <a class="project-btn" href="./assets/EmmanuelTrevino_SoftwareDeveloper.pdf" download="EmmanuelTrevino_SoftwareDeveloper">Download My Resume</a>
-        </div>
-    </section> -->
 </body>
