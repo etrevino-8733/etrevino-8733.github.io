@@ -84,8 +84,6 @@ const oilWellLoader = new GLTFLoader(loadingManager); oilWellLoader.load('../ass
   gltf.scene.position.z = 0;
   gltf.scene.rotation.y = -1.57;
   gltf.scene.name = "OilWell";
-  gltf.castShadow = true;
-  gltf.receiveShadow = true;
   gltf.scene.traverse( function( node ) {
 
     //  node.castShadow = true; 
@@ -123,8 +121,8 @@ const moon = new THREE.Mesh(
 moon.position.y = 75;
 moon.position.x = 150;
 moon.position.z = -200;
-moon.castShadow = false;
-moon.receiveShadow = true;
+// moon.castShadow = false;
+// moon.receiveShadow = true;
 moon.name = "Moon";
 scene.add(moon);
 
@@ -134,8 +132,8 @@ const well = new THREE.Mesh(
   new THREE.ConeGeometry(2, 3),
   new THREE.MeshStandardMaterial( {
     color: 0x4A95E5,
-    receiveShadow: true,
-    castShadow: true
+    // receiveShadow: true,
+    // castShadow: true
     //normalMap: normalTexture
   })
 );
