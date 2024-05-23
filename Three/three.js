@@ -42,24 +42,32 @@ camera.position.setX(30);
 
 // }, 1000);
 
-const pointLight = new THREE.PointLight(0xffffff, 10, 500, 0);
-pointLight.castShadow = true;
-pointLight.position.set( -100, 50, 100 )
+// const pointLight = new THREE.PointLight(0xffffff, 10, 500, 0);
+// pointLight.castShadow = true;
+// pointLight.position.set( -100, 50, 100 )
 
-//Set up shadow properties for the light
-// pointLight.shadow.mapSize.width = 700; // default
-// pointLight.shadow.mapSize.height = 700; // default
+// //Set up shadow properties for the light
+// // pointLight.shadow.mapSize.width = 700; // default
+// // pointLight.shadow.mapSize.height = 700; // default
+// // pointLight.shadow.camera.near = 0.5; // default
+// // pointLight.shadow.camera.far = 1; // default
+// pointLight.shadow.mapSize.width = 512; // default
+// pointLight.shadow.mapSize.height = 512; // default
 // pointLight.shadow.camera.near = 0.5; // default
-// pointLight.shadow.camera.far = 1; // default
-pointLight.shadow.mapSize.width = 512; // default
-pointLight.shadow.mapSize.height = 512; // default
-pointLight.shadow.camera.near = 0.5; // default
-pointLight.shadow.camera.far = 500; // default
+// pointLight.shadow.camera.far = 500; // default
+
+const light = new THREE.DirectionalLight(0xffffff, 1, 100);
+light.position.set( -100, 50, 100 )
+light.castShadow = true;
+light.shadow.mapSize.width = 512; // default
+light.shadow.mapSize.height = 512; // default
+light.shadow.camera.near = 0.5; // default
+light.shadow.camera.far = 500; // default
 
 const ambientLight = new THREE.AmbientLight(0xffffff);
-scene.add(pointLight, ambientLight);
+scene.add(light, ambientLight);
 
-const lightHelper = new THREE.PointLightHelper(pointLight, 3, 0x00FF51)
+const lightHelper = new THREE.PointLightHelper(light, 3, 0x00FF51)
 const gridHelper = new THREE.GridHelper(200, 50, 'red', 'blue');
 scene.add(lightHelper, gridHelper)
 
