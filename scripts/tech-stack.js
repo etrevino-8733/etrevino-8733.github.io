@@ -103,11 +103,10 @@ window.addEventListener('resize', onWindowResize, false);
 window.addEventListener('DOMContentLoaded', async() => [
     Ammo().then((lib) => {
         Ammo = lib;
-
         APP_ = new BasicWorldDemo();
         APP_.initialize();
 
-        animate();
+        //animate();
     })
 ]);
 
@@ -171,6 +170,35 @@ class RigidBody{
             .shape_, this.inertia_);
         this.body_ = new Ammo.btRigidBody(this.info_);
         this.body_.setWorldTransform(this.transform_);
+        console.log('Text box',this.body_);
+
+        Ammo.destroy(btSize);
+            
+    }
+
+    createText(mass, pos, quat, size){
+        this.transform_ = new Ammo.btTransform();
+        this.transform_.setIdentity();
+        this.transform_.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        this.transform_.setRotation(new Ammo.btQuaternion(quat.x, quat.y, quat.z, quat.w));
+        this.motionState_ = new Ammo.btDefaultMotionState(this.transform_);
+
+
+        const btSize = new Ammo.btVector3(size.x * 0.5, size.y * 0.5, size.z * 0.5);
+        this.shape_ = new Ammo.btBoxShape(btSize);
+        this.shape_.setMargin(0.05);
+
+        this.inertia_ = new Ammo.btVector3(0, 0, 0);
+        if(mass > 0){
+            this.shape_.calculateLocalInertia(mass, this.inertia_);
+        }
+
+        this.info_ = new Ammo.btRigidBodyConstructionInfo(mass, this.motionState_, this
+            .shape_, this.inertia_);
+        this.body_ = new Ammo.btRigidBody(this.info_);
+        this.body_.setWorldTransform(this.transform_);
+        console.log('Text BTSIXE',this.body_);
+
         Ammo.destroy(btSize);
             
     }
@@ -196,7 +224,7 @@ class BasicWorldDemo{
         
         this.tmpTransform_ = new Ammo.btTransform();
 
-        const groundGeometry = new THREE.PlaneGeometry( 20, 20, 32, 32 );
+        const groundGeometry = new THREE.PlaneGeometry( 100, 100, 32, 32 );
         const groundMaterial = new THREE.MeshStandardMaterial( {color: '#778B70', side: THREE.DoubleSide , roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
@@ -208,7 +236,7 @@ class BasicWorldDemo{
         rbGround.createBox(0, new THREE.Vector3(0, 0, 0), new THREE.Quaternion(0, 0, 0, 1), new THREE.Vector3(20, 0, 20));
         rbGround.setRestitution(0.99);
         this.physicsWorld_.addRigidBody(rbGround.body_);
-        this.rigidBodies_ = [{ mesh: plane, rigidBody: rbGround }];
+        this.rigidBodies_ = [];
 
 
         const box = new THREE.Mesh(
@@ -228,7 +256,7 @@ class BasicWorldDemo{
         rbBox.setFriction(1);
         rbBox.setRollingFriction(5);
         this.physicsWorld_.addRigidBody(rbBox.body_);
-        this.rigidBodies_ = [{ mesh: box, rigidBody: rbBox }];
+        this.rigidBodies_.push({ mesh: box, rigidBody: rbBox });
 
 
         const stack = ["HTML", "CSS", "JavaScript"];
@@ -255,14 +283,15 @@ class BasicWorldDemo{
                 text.position.x = startXPos;
                 text.position.z = 0;
                 startXPos += (stack[i].length * .5);
-            //     const rbText = new RigidBody();
-            //     rbText.createBox(1, text.position, text.quaternion, new THREE.Vector3(1, 1, 1));
-            //     rbText.setRestitution(0.125);
-            //     rbText.setFriction(1);
-            //     rbText.setRollingFriction(5);
-            // this.physicsWorld_.addRigidBody(rbText.body_);
-            // this.rigidBodies_ = [{ rbText: text, rigidBody: rbText }];
-            scene.add(text);
+                scene.add(text);
+
+                const rbText = new RigidBody();
+                rbText.createText(1, text.position, text.quaternion, new THREE.Vector3(1, 1, 1));
+                rbText.setRestitution(0.125);
+                rbText.setFriction(1);
+                rbText.setRollingFriction(5);
+                APP_.physicsWorld_.addRigidBody(rbText.body_);
+                APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
             });
             }
         
@@ -307,22 +336,32 @@ class BasicWorldDemo{
                 text.rotation.y = Math.PI / 5;
                 scene.add(text);
             });
+
+            animate();
     }
 
     step_(timeElapsed){
-        timeElapsed = timeElapsed * 0.001;
-        this.physicsWorld_.stepSimulation(timeElapsed, 10);
+        const timeElapsedS = timeElapsed * 0.001;
 
+        this.countdown_ -= timeElapsedS;
+        if (this.countdown_ < 0 && this.count_ < 10) {
+          this.countdown_ = 0.25;
+          this.count_ += 1;
+          this.spawn_();
+        }
+    
+        this.physicsWorld_.stepSimulation(timeElapsedS, 10);
+    
         for (let i = 0; i < this.rigidBodies_.length; ++i) {
-            this.rigidBodies_[i].rigidBody.motionState_.getWorldTransform(this.tmpTransform_);
-            const pos = this.tmpTransform_.getOrigin();
-            const quat = this.tmpTransform_.getRotation();
-            const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
-            const quat3 = new THREE.Quaternion(quat.x(), quat.y(), quat.z(), quat.w());
-      
-            this.rigidBodies_[i].mesh.position.copy(pos3);
-            this.rigidBodies_[i].mesh.quaternion.copy(quat3);
-          }
+          this.rigidBodies_[i].rigidBody.motionState_.getWorldTransform(this.tmpTransform_);
+          const pos = this.tmpTransform_.getOrigin();
+          const quat = this.tmpTransform_.getRotation();
+          const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
+          const quat3 = new THREE.Quaternion(quat.x(), quat.y(), quat.z(), quat.w());
+    
+          this.rigidBodies_[i].mesh.position.copy(pos3);
+          this.rigidBodies_[i].mesh.quaternion.copy(quat3);
+        }
     }
 
 
