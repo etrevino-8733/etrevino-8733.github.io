@@ -96,6 +96,40 @@ function onWindowResize(){
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth - 80, canvasHeight);
   }
+
+
+const mouse = new THREE.Vector2();
+const intersectionPoint = new THREE.Vector3();
+const planeNormal = new THREE.Vector3();
+const plane = new THREE.Plane();
+const raycaster = new THREE.Raycaster();
+
+canvas.addEventListener('mousemove', function(e){
+    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    mouse.y = -(e.clientY / canvasHeight) * 2 + 1.5;
+    planeNormal.copy(camera.position).normalize();
+    plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
+    raycaster.setFromCamera(mouse, camera);
+    raycaster.ray.intersectPlane(plane, intersectionPoint);
+});
+canvas.addEventListener('click', function(e){
+    console.log('Click', e);
+    const sphereGeo = new THREE.SphereGeometry(1, 32, 32);
+    const sphereMat = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.5, metalness: 0});
+    
+    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    scene.add(sphereMesh);
+    sphereMesh.position.copy(intersectionPoint);
+
+    const sphereBody = new RigidBody();
+    sphereBody.createSphere(5, intersectionPoint, 1);
+    sphereBody.setRestitution(0.99);
+    sphereBody.setFriction(0.5);
+    sphereBody.setRollingFriction(0.5);
+    APP_.physicsWorld_.addRigidBody(sphereBody.body_);
+    APP_.rigidBodies_.push({ mesh: sphereMesh, rigidBody: sphereBody });
+
+});
 window.addEventListener('resize', onWindowResize, false);
 window.addEventListener('DOMContentLoaded', async() => [
     Ammo().then((lib) => {
@@ -173,6 +207,25 @@ class RigidBody{
         Ammo.destroy(btSize);
             
     }
+
+    createSphere(mass, pos, size) {
+        this.transform_ = new Ammo.btTransform();
+        this.transform_.setIdentity();
+        this.transform_.setOrigin(new Ammo.btVector3(pos.x, pos.y, pos.z));
+        this.transform_.setRotation(new Ammo.btQuaternion(0, 0, 0, 1));
+        this.motionState_ = new Ammo.btDefaultMotionState(this.transform_);
+    
+        this.shape_ = new Ammo.btSphereShape(size);
+        this.shape_.setMargin(0.05);
+    
+        this.inertia_ = new Ammo.btVector3(0, 0, 0);
+        if(mass > 0) {
+          this.shape_.calculateLocalInertia(mass, this.inertia_);
+        }
+    
+        this.info_ = new Ammo.btRigidBodyConstructionInfo(mass, this.motionState_, this.shape_, this.inertia_);
+        this.body_ = new Ammo.btRigidBody(this.info_);
+      }
 }
 
 /// Physics
@@ -201,7 +254,7 @@ class BasicWorldDemo{
         scene.add( plane );
 
         const rbGround = new RigidBody();
-        rbGround.createBox(0, new THREE.Vector3(0, 0, 0), new THREE.Quaternion(0, 0, 0, 1), new THREE.Vector3(20, 0, 20));
+        rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(100, 1, 100));
         rbGround.setRestitution(0.99);
         this.physicsWorld_.addRigidBody(rbGround.body_);
         this.rigidBodies_ = [];
