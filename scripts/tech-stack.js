@@ -24,15 +24,15 @@ const renderer = new THREE.WebGLRenderer({
   });
 const canvasHeight = 500;
 
-const camera = new THREE.PerspectiveCamera( 75, window.innerWidth / canvasHeight, 0.1, 1000 );
+const camera = new THREE.PerspectiveCamera( 80, window.innerWidth / canvasHeight, 1, 1000 );
 renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize( window.innerWidth - 80, canvasHeight );
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
-camera.position.setZ(15);
-camera.position.setY(1);
-camera.position.setX(2);
-camera.lookAt(0,0,-20);
+camera.position.setZ(20);
+camera.position.setY(2);
+camera.position.setX(0);
+camera.lookAt(0,0,0);
 
 
 const light = new THREE.DirectionalLight(0xffffff, 1, 100);
@@ -124,9 +124,12 @@ canvas.addEventListener('click', function(e){
     const sphereMat = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.5, metalness: 0});
     
     const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    sphereMesh.castShadow = true;
+    sphereMesh.quaternion.set(0, 0, 0, 1);
+
     scene.add(sphereMesh);
 
-    let shotY = intersectionPoint.y < 1 ? 1 : intersectionPoint.y;
+    let shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
     sphereMesh.position.set(camera.position.x, shotY, camera.position.z);
 
     const sphereBody = new RigidBody();
@@ -144,13 +147,28 @@ canvas.addEventListener('click', function(e){
 
 });
 window.addEventListener('resize', onWindowResize, false);
-window.addEventListener('DOMContentLoaded', async() => [
+window.addEventListener('DOMContentLoaded', async() => {
     Ammo().then((lib) => {
         Ammo = lib;
         APP_ = new BasicWorldDemo();
         APP_.initialize();
-    })
-]);
+    });
+    const respawn = document.getElementById('respawn');
+   respawn.addEventListener('click', function(){
+         console.log('Respawn');
+        
+        APP_.rigidBodies_.forEach((rb) => {
+            scene.remove(rb.mesh);
+            APP_.physicsWorld_.removeRigidBody(rb.rigidBody.body_);
+        });
+        APP_.rigidBodies_ = [];
+        APP_.count_ = 0;
+        APP_.countdown_ = 1.0;
+        APP_.initialize();
+    });
+    
+});
+
 class RigidBody{
     constructor(){
 
@@ -189,7 +207,6 @@ class RigidBody{
             .shape_, this.inertia_);
         this.body_ = new Ammo.btRigidBody(this.info_);
         this.body_.setWorldTransform(this.transform_);
-        console.log('Text box',this.body_);
 
         Ammo.destroy(btSize);
             
@@ -205,7 +222,7 @@ class RigidBody{
 
         const btSize = new Ammo.btVector3(size.x * 0.5, size.y * 0.5, size.z * 0.5);
         this.shape_ = new Ammo.btBoxShape(btSize);
-        this.shape_.setMargin(0.05);
+        this.shape_.setMargin(2, 0.05, 0.05);
         this.inertia_ = new Ammo.btVector3(0, 0, 0);
         if(mass > 0){
             this.shape_.calculateLocalInertia(mass, this.inertia_);
@@ -215,7 +232,6 @@ class RigidBody{
             .shape_, this.inertia_);
         this.body_ = new Ammo.btRigidBody(this.info_);
         this.body_.setWorldTransform(this.transform_);
-        console.log('Text BTSIXE',this.body_);
 
         Ammo.destroy(btSize);
             
@@ -229,7 +245,7 @@ class RigidBody{
         this.motionState_ = new Ammo.btDefaultMotionState(this.transform_);
     
         this.shape_ = new Ammo.btSphereShape(size);
-        this.shape_.setMargin(0.05);
+        this.shape_.setMargin(2, 0.05, 0.05);
     
         this.inertia_ = new Ammo.btVector3(0, 0, 0);
         if(mass > 0) {
@@ -238,6 +254,8 @@ class RigidBody{
     
         this.info_ = new Ammo.btRigidBodyConstructionInfo(mass, this.motionState_, this.shape_, this.inertia_);
         this.body_ = new Ammo.btRigidBody(this.info_);
+        this.body_.setWorldTransform(this.transform_);
+
       }
 }
 
@@ -263,7 +281,7 @@ class BasicWorldDemo{
         const groundMaterial = new THREE.MeshStandardMaterial( {color: '#65A87A', roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
-        plane.position.y = -.5;
+        //plane.position.y = 0;
         scene.add( plane );
 
         const rbGround = new RigidBody();
@@ -274,18 +292,18 @@ class BasicWorldDemo{
 
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
-            {"tech": [".Net Core", "asp.net", "NX", "Angular"]},            
+            {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
             {"tech": ["TypeScript", "JavaScript", "HTML", "CSS", "SASS", "C#"]},
         ];
-        let height = 1;
-        let startXPos = -12;
-        let startYPos = 0;
+        let height = 2;
+        let startXPos = -25;
         let longestTech = 0;
         for (let x = 0; x < stack.length; x++){
             startXPos = startXPos + (longestTech * height);
-            console.log('Start X pos', startXPos);
             longestTech = 0;
             for (let i = 0; i < stack[x].tech.length; i++){
+                const techYPos = i * height + 1;
+
                 const tech = stack[x].tech[i];
                 const techXPos = startXPos;
 
@@ -310,19 +328,18 @@ class BasicWorldDemo{
                     const textMaterial = new THREE.MeshStandardMaterial({color: '#86DFDF', roughness: 0.01, metalness: 0});
                     const text = new THREE.Mesh(textGeometry, textMaterial);
                     text.castShadow = true;
-                    text.position.set(techXPos, startYPos, 0);
+                    text.position.set(techXPos, techYPos, 0);
                     text.quaternion.set(0, 0, 0, 1);
                     scene.add(text);
     
                     const rbText = new RigidBody();
-                    rbText.createText(20, text.position, text.quaternion, new THREE.Vector3(height * tech.length, 1, 1.5));
+                    rbText.createText(20, text.position, text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
                     rbText.setRestitution(0);
                     rbText.setFriction(.5);
                     rbText.setRollingFriction(0);
                     APP_.physicsWorld_.addRigidBody(rbText.body_);
                     APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
                 });
-                //startYPos += .6;
             }
         }
 
@@ -352,33 +369,35 @@ class BasicWorldDemo{
                 bevelSegments: 1,
             });
             const textMaterial = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.01, metalness: 0});
-            const text = new THREE.Mesh(textGeometryTop, textMaterial);
+            const topText = new THREE.Mesh(textGeometryTop, textMaterial);
             const textBottom = new THREE.Mesh(textGeometryBottom, textMaterial);
             textBottom.castShadow = true;
-            textBottom.position.y = 0;
+            textBottom.position.y = .5;
             textBottom.position.x = -18;
             textBottom.position.z = -20;
             textBottom.rotation.y = Math.PI / 5;
             scene.add(textBottom);
-            text.castShadow = true;
-            text.position.y = 3;
-            text.position.x = -18;
-            text.position.z = -20;
-            text.rotation.y = Math.PI / 5;
-            scene.add(text);
+            topText.castShadow = true;
+            topText.position.y = 3;
+            topText.position.x = -18;
+            topText.position.z = -20;
+            topText.rotation.y = Math.PI / 5;
+            scene.add(topText);
 
-            rbText.createText(0, text.position, text.quaternion, new THREE.Vector3(3, 3, 1));
-            rbText.setRestitution(0.125);
-            rbText.setFriction(10);
-            rbText.setRollingFriction(10);
+            const rbTopText = new RigidBody();
+            rbTopText.createText(0, topText.position, topText.quaternion, new THREE.Vector3(9, 3, 1));
+            rbTopText.setRestitution(0.125);
+            rbTopText.setFriction(10);
+            rbTopText.setRollingFriction(10);
 
-            rbTextBottom.createText(0, textBottom.position, textBottom.quaternion, new THREE.Vector3(3, 3, 1));
+            const rbTextBottom = new RigidBody();
+            rbTextBottom.createText(0, textBottom.position, textBottom.quaternion, new THREE.Vector3(12, 3, 1));
             rbTextBottom.setRestitution(0.125);
             rbTextBottom.setFriction(10);
             rbTextBottom.setRollingFriction(10);
 
-            APP_.physicsWorld_.addRigidBody(rbText.body_);
-            APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
+            APP_.physicsWorld_.addRigidBody(rbTopText.body_);
+            APP_.rigidBodies_.push({ mesh: topText, rigidBody: rbTopText });
             APP_.physicsWorld_.addRigidBody(rbTextBottom.body_);
             APP_.rigidBodies_.push({ mesh: textBottom, rigidBody: rbTextBottom });
 
@@ -398,12 +417,12 @@ class BasicWorldDemo{
         const timeElapsedS = timeElapsed * 0.001;
 
         this.countdown_ -= timeElapsedS;
-        if (this.countdown_ < 0 && this.count_ < 12) {
-            console.log('Spawn', this.countdown_);
-          this.countdown_ = 0.25;
-          this.count_ += 1;
-          //this.spawn_();
-        }
+        // if (this.countdown_ < 0 && this.count_ < 12) {
+        //     console.log('Spawn', this.countdown_);
+        //   this.countdown_ = 0.25;
+        //   this.count_ += 1;
+        //   this.spawn_();
+        // }
     
         this.physicsWorld_.stepSimulation(timeElapsedS, 10);
     
