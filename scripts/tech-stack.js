@@ -32,7 +32,7 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 camera.position.setZ(15);
 camera.position.setY(1);
 camera.position.setX(2);
-camera.lookAt(0,20,0);
+camera.lookAt(0,0,-20);
 
 
 const light = new THREE.DirectionalLight(0xffffff, 1, 100);
@@ -47,6 +47,10 @@ scene.background = new THREE.Color("#dfe2e6");
 scene.add(light, ambientLight);
 
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.minDistance = 1;
+controls.maxDistance = 1000;
+controls.minPolarAngle = 1;
+controls.maxPolarAngle = Math.PI / 2;
 
 const loadingManager = new THREE.LoadingManager();
 
@@ -120,14 +124,10 @@ canvas.addEventListener('click', function(e){
     const sphereMat = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.5, metalness: 0});
     
     const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-    let barrle = 0;
-    if(camera.position.z < 0){
-        barrle = 5;
-    }else{
-        barrle = -5;
-    }
     scene.add(sphereMesh);
-    sphereMesh.position.set(intersectionPoint.x / camera.position.z, intersectionPoint.y, camera.position.z + barrle);
+
+    let shotY = intersectionPoint.y < 1 ? 1 : intersectionPoint.y;
+    sphereMesh.position.set(camera.position.x, shotY, camera.position.z);
 
     const sphereBody = new RigidBody();
     sphereBody.createSphere(5, sphereMesh.position, 1);
@@ -263,7 +263,7 @@ class BasicWorldDemo{
         const groundMaterial = new THREE.MeshStandardMaterial( {color: '#65A87A', roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
-        plane.position.y = 0;
+        plane.position.y = -.5;
         scene.add( plane );
 
         const rbGround = new RigidBody();
