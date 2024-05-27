@@ -374,7 +374,7 @@ class BasicWorldDemo{
             });
             const textMaterial = [
                 new THREE.MeshPhongMaterial( { color: "#F2630F", flatShading: true } ), // front
-                new THREE.MeshPhongMaterial( { color: 0xffffff } ) // side
+                new THREE.MeshPhongMaterial( { color: '#c24e0a' } ) // side
             ];
             const topText = new THREE.Mesh(textGeometryTop, textMaterial);
             const textBottom = new THREE.Mesh(textGeometryBottom, textMaterial);
