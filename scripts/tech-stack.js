@@ -128,9 +128,8 @@ canvas.addEventListener('click', function(e){
     sphereMesh.quaternion.set(0, 0, 0, 1);
 
     scene.add(sphereMesh);
-
-    let shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
-    sphereMesh.position.set(camera.position.x, shotY, camera.position.z);
+    const shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
+    sphereMesh.position.set(camera.position.x, shotY + controls.target.y, camera.position.z);
 
     const sphereBody = new RigidBody();
     sphereBody.createSphere(5, sphereMesh.position, 1);
@@ -281,7 +280,6 @@ class BasicWorldDemo{
         const groundMaterial = new THREE.MeshStandardMaterial( {color: '#65A87A', roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
-        //plane.position.y = 0;
         scene.add( plane );
 
         const rbGround = new RigidBody();
@@ -328,12 +326,13 @@ class BasicWorldDemo{
                     const textMaterial = new THREE.MeshStandardMaterial({color: '#86DFDF', roughness: 0.01, metalness: 0});
                     const text = new THREE.Mesh(textGeometry, textMaterial);
                     text.castShadow = true;
+                    text.receiveShadow = true;
                     text.position.set(techXPos, techYPos, 0);
                     text.quaternion.set(0, 0, 0, 1);
                     scene.add(text);
     
                     const rbText = new RigidBody();
-                    rbText.createText(20, text.position, text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
+                    rbText.createText(35, text.position, text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
                     rbText.setRestitution(0);
                     rbText.setFriction(.5);
                     rbText.setRollingFriction(0);
