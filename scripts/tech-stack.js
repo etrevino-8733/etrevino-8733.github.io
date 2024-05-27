@@ -2,18 +2,20 @@ import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.m
 // import * as Ammo from 'https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js';
 
 // import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js';
-import { MMDPhysics } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/animation/MMDPhysics.js';
+// import { MMDPhysics } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/animation/MMDPhysics.js';
 import { OrbitControls } from '../libraries/Three/OrbitControls.js';
 
 import { FontLoader } from '../libraries/Three/FontLoader.js';
 import { TextGeometry } from '../libraries/Three/TextGeometry.js';
 // import { Mesh } from '../libraries/Three/three.module.js';
-// import gsap from "../libraries/Three/gsap-core.js";
+import gsap from "../libraries/Three/gsap-core.js";
 
 let timeElapsed = 0;
 let APP_ = null;
 let previousRAF_ = null;
 const DEFAULT_MASS = 10;
+const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
+const CAM_START_POS = new THREE.Vector3(-55, 40, -10);
 
 
 const scene = new THREE.Scene();
@@ -29,11 +31,7 @@ renderer.setPixelRatio( window.devicePixelRatio );
 renderer.setSize( window.innerWidth - 80, canvasHeight );
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
-camera.position.setZ(20);
-camera.position.setY(2);
-camera.position.setX(0);
-camera.lookAt(0,0,0);
-
+camera.position.copy(CAM_START_POS);
 
 const light = new THREE.DirectionalLight(0xffffff, 1, 100);
 light.position.set( -5, 5, 5 )
@@ -51,6 +49,8 @@ controls.minDistance = 1;
 controls.maxDistance = 1000;
 controls.minPolarAngle = 1;
 controls.maxPolarAngle = Math.PI / 2;
+controls.target = new THREE.Vector3(-40, 40, -10);
+controls.update();
 
 const loadingManager = new THREE.LoadingManager();
 
@@ -277,7 +277,7 @@ class BasicWorldDemo{
             this.dispatcher_, this.broadphase_, this.solver_, this.collisionConfiguration_);
         this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));  
         
-        const groundGeometry = new THREE.BoxGeometry(100, 1, 100);
+        const groundGeometry = new THREE.BoxGeometry(200, 1, 100);
         const groundMaterial = new THREE.MeshStandardMaterial( {color: '#65A87A', roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
@@ -285,7 +285,7 @@ class BasicWorldDemo{
         scene.add( plane );
 
         const rbGround = new RigidBody();
-        rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(100, 1, 100));
+        rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(200, 1, 100));
         rbGround.setRestitution(0.99);
         this.physicsWorld_.addRigidBody(rbGround.body_);
         this.rigidBodies_ = [];
@@ -343,24 +343,29 @@ class BasicWorldDemo{
             }
         }
 
+        const logoSize = 10;
+        const logoPositionX = -50;
+        const logoPositionZ = -30;
+        const logoPositionY = 25;
         const loader = new FontLoader(loadingManager);
         const font = loader.load('../assets/fonts/Heebo Black_Regular.json');
         loader.load('../assets/fonts/Heebo Black_Regular.json', function(font){
             const textGeometryTop = new TextGeometry('ET', {
                 font: font,
-                size: 3,
-                depth: 1,
+                size: logoSize,
+                depth: 5,
                 curveSegments: .01,
                 bevelEnabled: true,
                 bevelThickness: .0022,
                 bevelSize: .001,
                 bevelOffset: 0,
                 bevelSegments: 1,
+                mirror: true
             });
             const textGeometryBottom = new TextGeometry('TECH', {
                 font: font,
-                size: 3,
-                depth: 1,
+                size: logoSize,
+                depth: 5,
                 curveSegments: .01,
                 bevelEnabled: true,
                 bevelThickness: .0022,
@@ -368,30 +373,33 @@ class BasicWorldDemo{
                 bevelOffset: 0,
                 bevelSegments: 1,
             });
-            const textMaterial = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.01, metalness: 0});
+            const textMaterial = [
+                new THREE.MeshPhongMaterial( { color: "#F2630F", flatShading: true } ), // front
+                new THREE.MeshPhongMaterial( { color: 0xffffff } ) // side
+            ];
             const topText = new THREE.Mesh(textGeometryTop, textMaterial);
             const textBottom = new THREE.Mesh(textGeometryBottom, textMaterial);
             textBottom.castShadow = true;
-            textBottom.position.y = .5;
-            textBottom.position.x = -18;
-            textBottom.position.z = -20;
-            textBottom.rotation.y = Math.PI / 5;
+            textBottom.position.y = logoPositionY;
+            textBottom.position.x = logoPositionX;
+            textBottom.position.z = logoPositionZ;
+            //textBottom.rotation.y = Math.PI / 2;
             scene.add(textBottom);
             topText.castShadow = true;
-            topText.position.y = 3;
-            topText.position.x = -18;
-            topText.position.z = -20;
-            topText.rotation.y = Math.PI / 5;
+            topText.position.y = logoPositionY + logoSize;
+            topText.position.x = logoPositionX;
+            topText.position.z = logoPositionZ;
+            //topText.rotation.y = Math.PI / 5;
             scene.add(topText);
 
             const rbTopText = new RigidBody();
-            rbTopText.createText(0, topText.position, topText.quaternion, new THREE.Vector3(9, 3, 1));
+            rbTopText.createText(0, topText.position, topText.quaternion, new THREE.Vector3(logoSize * 2, logoSize, 1));
             rbTopText.setRestitution(0.125);
             rbTopText.setFriction(10);
             rbTopText.setRollingFriction(10);
 
             const rbTextBottom = new RigidBody();
-            rbTextBottom.createText(0, textBottom.position, textBottom.quaternion, new THREE.Vector3(12, 3, 1));
+            rbTextBottom.createText(0, textBottom.position, textBottom.quaternion, new THREE.Vector3(logoSize * 4, logoSize, 1));
             rbTextBottom.setRestitution(0.125);
             rbTextBottom.setFriction(10);
             rbTextBottom.setRollingFriction(10);
@@ -401,6 +409,7 @@ class BasicWorldDemo{
             APP_.physicsWorld_.addRigidBody(rbTextBottom.body_);
             APP_.rigidBodies_.push({ mesh: textBottom, rigidBody: rbTextBottom });
 
+            centerCamera(5);
         });
 
 
@@ -470,4 +479,26 @@ class BasicWorldDemo{
         scene.add(box);
       }
 }
+
+
+
+// Camera functions
+function centerCamera(seconds){
+    gsap.to(camera.position, {
+      x: 0,
+      y: 2,
+      z: 30,
+      duration: seconds
+    });
+    gsap.to(controls.target, {
+        x: 0,
+        y: 2,
+        z: 0,
+        duration: seconds,
+        onUpdate: function(){
+            controls.update();
+          }
+        });
+    gsap.updateRoot(timeElapsed);
+  }
 
