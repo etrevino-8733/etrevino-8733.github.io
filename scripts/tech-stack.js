@@ -1,5 +1,5 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
-// import * as Ammo from 'https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js';
+//import * as AMMO from 'https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js';
 
 // import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js';
 // import { MMDPhysics } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/animation/MMDPhysics.js';
@@ -12,6 +12,7 @@ import gsap from "../libraries/Three/gsap-core.js";
 
 let timeElapsed = 0;
 let APP_ = null;
+let CONTROLS_ = null;
 let previousRAF_ = null;
 const DEFAULT_MASS = 10;
 const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
@@ -22,35 +23,9 @@ const scene = new THREE.Scene();
 const canvas = document.querySelector('#tech-stack');
 const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#tech-stack'),
-    antialias: true
+    antialias: true,
   });
 const canvasHeight = 500;
-
-const camera = new THREE.PerspectiveCamera( 80, window.innerWidth / canvasHeight, 1, 1000 );
-renderer.setPixelRatio( window.devicePixelRatio );
-renderer.setSize( window.innerWidth - 80, canvasHeight );
-renderer.shadowMap.enabled = true;
-renderer.shadowMap.type = THREE.PCFSoftShadowMap; 
-camera.position.copy(CAM_START_POS);
-
-const light = new THREE.DirectionalLight(0xffffff, 1, 100);
-light.position.set( -5, 5, 5 )
-light.castShadow = true;
-light.shadow.mapSize.width = 512; // default
-light.shadow.mapSize.height = 512; // default
-light.shadow.camera.near = 1; // default
-light.shadow.camera.far = 500; // default
-const ambientLight = new THREE.AmbientLight(0xffffff);
-scene.background = new THREE.Color("#dfe2e6"); 
-scene.add(light, ambientLight);
-
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.minDistance = 1;
-controls.maxDistance = 1000;
-controls.minPolarAngle = 1;
-controls.maxPolarAngle = Math.PI / 2;
-controls.target = new THREE.Vector3(-40, 40, -10);
-controls.update();
 
 const loadingManager = new THREE.LoadingManager();
 
@@ -71,101 +46,90 @@ function animate(){
         }
   
         APP_.step_(t - previousRAF_);
-        renderer.render(scene, camera);
+        renderer.render(scene, CONTROLS_.camera);
         animate();
         previousRAF_ = t;
       });
 }
 
-//animate();
-// const moonTexture = new THREE.TextureLoader(loadingManager).load('../assets/scenes/moon.jpeg');
-// const normalTexture = new THREE.TextureLoader(loadingManager).load('../assets/scenes/moonTexture.jpeg');
-
-// const moon = new THREE.Mesh(
-//   new THREE.SphereGeometry(8, 32, 32),
-//   new THREE.MeshStandardMaterial( {
-//     map: moonTexture,
-//     normalMap: normalTexture
-//   })
-// );
-// moon.position.y = 0;
-// moon.position.x = 0;
-// moon.position.z = 0;
-// moon.name = "Moon";
-// scene.add(moon);
-
-renderer.render( scene, camera );
-
 function onWindowResize(){
-    camera.aspect = window.innerWidth / canvasHeight;
-    camera.updateProjectionMatrix();
+    CONTROLS_.camera.aspect = window.innerWidth / canvasHeight;
+    CONTROLS_.camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth - 80, canvasHeight);
   }
 
-
-const mouse = new THREE.Vector2();
-const intersectionPoint = new THREE.Vector3();
-const planeNormal = new THREE.Vector3();
-const plane = new THREE.Plane();
-const raycaster = new THREE.Raycaster();
-const tempPos = new THREE.Vector3();
-
-canvas.addEventListener('mousemove', function(e){
-    mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    mouse.y = -(e.clientY / canvasHeight) * 2 + 1.5;
-    planeNormal.copy(camera.position).normalize();
-    plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
-    raycaster.setFromCamera(mouse, camera);
-    raycaster.ray.intersectPlane(plane, intersectionPoint);
-});
-canvas.addEventListener('click', function(e){
-    console.log('Click', e);
-    const sphereGeo = new THREE.SphereGeometry(.5, 32, 32);
-    const sphereMat = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.5, metalness: 0});
+function setupControls(){
+    const mouse = new THREE.Vector2();
+    const intersectionPoint = new THREE.Vector3();
+    const planeNormal = new THREE.Vector3();
+    const plane = new THREE.Plane();
+    const raycaster = new THREE.Raycaster();
+    const tempPos = new THREE.Vector3();
     
-    const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-    sphereMesh.castShadow = true;
-    sphereMesh.quaternion.set(0, 0, 0, 1);
+    canvas.addEventListener('mousemove', function(e){
+        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(e.clientY / canvasHeight) * 2 + 1.5;
+        planeNormal.copy(CONTROLS_.camera.position).normalize();
+        plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
+        raycaster.setFromCamera(mouse, CONTROLS_.camera);
+        raycaster.ray.intersectPlane(plane, intersectionPoint);
+    });
+    canvas.addEventListener('click', function(e){
+        console.log('Click', e);
+        const sphereGeo = new THREE.SphereGeometry(.5, 32, 32);
+        const sphereMat = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.5, metalness: 0});
+        
+        const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+        sphereMesh.castShadow = true;
+        sphereMesh.quaternion.set(0, 0, 0, 1);
+    
+        scene.add(sphereMesh);
+        const shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
+        sphereMesh.position.set(CONTROLS_.camera.position.x, shotY + CONTROLS_.controls.target.y, CONTROLS_.camera.position.z);
+    
+        const sphereBody = new RigidBody();
+        sphereBody.createSphere(5, sphereMesh.position, 1);
+        sphereBody.setRestitution(0.99);
+        sphereBody.setFriction(0.5);
+        sphereBody.setRollingFriction(0.5);
+        APP_.physicsWorld_.addRigidBody(sphereBody.body_);
+        APP_.rigidBodies_.push({ mesh: sphereMesh, rigidBody: sphereBody });
+    
+        tempPos.copy(raycaster.ray.direction);
+        tempPos.multiplyScalar(50);
+        console.log('Sphere body', sphereBody.body_);
+        sphereBody.body_.setLinearVelocity(new Ammo.btVector3(tempPos.x, tempPos.y, tempPos.z));    
+    });
+}
 
-    scene.add(sphereMesh);
-    const shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
-    sphereMesh.position.set(camera.position.x, shotY + controls.target.y, camera.position.z);
 
-    const sphereBody = new RigidBody();
-    sphereBody.createSphere(5, sphereMesh.position, 1);
-    sphereBody.setRestitution(0.99);
-    sphereBody.setFriction(0.5);
-    sphereBody.setRollingFriction(0.5);
-    APP_.physicsWorld_.addRigidBody(sphereBody.body_);
-    APP_.rigidBodies_.push({ mesh: sphereMesh, rigidBody: sphereBody });
-
-    tempPos.copy(raycaster.ray.direction);
-    tempPos.multiplyScalar(50);
-    console.log('Sphere body', sphereBody.body_);
-    sphereBody.body_.setLinearVelocity(new Ammo.btVector3(tempPos.x, tempPos.y, tempPos.z));
-
-});
 window.addEventListener('resize', onWindowResize, false);
 window.addEventListener('DOMContentLoaded', async() => {
     Ammo().then((lib) => {
         Ammo = lib;
-        APP_ = new BasicWorldDemo();
+        APP_ = new MyWorld();
+        CONTROLS_ = new Controls();
         APP_.initialize();
+        CONTROLS_.centerCamera(5);
     });
     const respawn = document.getElementById('respawn');
-   respawn.addEventListener('click', function(){
-         console.log('Respawn');
-        
-        APP_.rigidBodies_.forEach((rb) => {
-            scene.remove(rb.mesh);
-            APP_.physicsWorld_.removeRigidBody(rb.rigidBody.body_);
+    respawn.addEventListener('click', function(){
+            console.log('Respawn');
+            
+            APP_.rigidBodies_.forEach((rb) => {
+                scene.remove(rb.mesh);
+                APP_.physicsWorld_.removeRigidBody(rb.rigidBody.body_);
+            });
+            APP_.rigidBodies_ = [];
+            APP_.count_ = 0;
+            APP_.countdown_ = 1.0;
+            APP_.initialize();
+            CONTROLS_.centerCamera(5);
+
+            renderer.render( scene, CONTROLS_.camera );
+
         });
-        APP_.rigidBodies_ = [];
-        APP_.count_ = 0;
-        APP_.countdown_ = 1.0;
-        APP_.initialize();
-    });
-    
+    setupControls();   
 });
 
 class RigidBody{
@@ -258,12 +222,8 @@ class RigidBody{
       }
 }
 
-/// Physics
-
-class BasicWorldDemo{
+class MyWorld{
     constructor(){
-
-
     }
     initialize(){
 
@@ -276,6 +236,8 @@ class BasicWorldDemo{
             this.dispatcher_, this.broadphase_, this.solver_, this.collisionConfiguration_);
         this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));  
         
+
+        /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(200, 1, 100);
         const groundMaterial = new THREE.MeshStandardMaterial( {color: '#65A87A', roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
@@ -288,6 +250,8 @@ class BasicWorldDemo{
         this.physicsWorld_.addRigidBody(rbGround.body_);
         this.rigidBodies_ = [];
 
+
+        // SET ENVIRONMENT TEXT
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
             {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
@@ -332,12 +296,14 @@ class BasicWorldDemo{
                     scene.add(text);
     
                     const rbText = new RigidBody();
-                    rbText.createText(35, text.position, text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
+                    rbText.createText(35, new THREE.Vector3(text.position.x, text.position.y, text.position.z), text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
                     rbText.setRestitution(0);
                     rbText.setFriction(.5);
                     rbText.setRollingFriction(0);
                     APP_.physicsWorld_.addRigidBody(rbText.body_);
                     APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
+                    //createRigidbodyOutlineHelper(scene, rbText.body_, 0x86DFDF);
+
                 });
             }
         }
@@ -407,8 +373,6 @@ class BasicWorldDemo{
             APP_.rigidBodies_.push({ mesh: topText, rigidBody: rbTopText });
             APP_.physicsWorld_.addRigidBody(rbTextBottom.body_);
             APP_.rigidBodies_.push({ mesh: textBottom, rigidBody: rbTextBottom });
-
-            centerCamera(5);
         });
 
 
@@ -479,25 +443,106 @@ class BasicWorldDemo{
       }
 }
 
+class Controls{
+    camera = new THREE.PerspectiveCamera( 80, window.innerWidth / canvasHeight, 1, 1000 );
+    controls = null;
 
+    constructor(){
+        renderer.setPixelRatio( window.devicePixelRatio );
+        renderer.setSize( window.innerWidth - 80, canvasHeight );
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.camera.position.copy(CAM_START_POS);
+        
+        const light = new THREE.DirectionalLight(0xffffff, 1, 100);
+        light.position.set( -50, 50, 50 );
+        light.p
+        light.castShadow = true;
+        light.shadow.mapSize.width = 512; // default
+        light.shadow.mapSize.height = 512; // default
+        light.shadow.camera.near = .5; // default
+        light.shadow.camera.far = 500; // default
+        light.shadow.camera.left = -100;
+        light.shadow.camera.right = 75;
+        light.shadow.camera.top = 40;
+        light.shadow.camera.bottom = -50;
+        const ambientLight = new THREE.AmbientLight(0xffffff);
+        scene.background = new THREE.Color("#dfe2e6"); 
+        scene.add(light, ambientLight);
 
-// Camera functions
-function centerCamera(seconds){
-    gsap.to(camera.position, {
-      x: 0,
-      y: 2,
-      z: 30,
-      duration: seconds
-    });
-    gsap.to(controls.target, {
-        x: 0,
-        y: 2,
-        z: 0,
-        duration: seconds,
-        onUpdate: function(){
-            controls.update();
-          }
+        // const lightHelper = new THREE.PointLight( light, 5 );
+        // scene.add( lightHelper );
+
+        // const helper = new THREE.CameraHelper( light.shadow.camera );
+        // scene.add( helper );
+
+        this.controls = new OrbitControls(this.camera, renderer.domElement);
+        
+        this.controls.minDistance = 1;
+        this.controls.maxDistance = 1000;
+        this.controls.minPolarAngle = 1;
+        this.controls.maxPolarAngle = Math.PI / 2;
+        this.controls.target = new THREE.Vector3(-40, 40, -10);
+    }
+
+    centerCamera(seconds){
+        let controls = this.controls;
+        gsap.to(this.camera.position, {
+          x: 0,
+          y: 2,
+          z: 30,
+          duration: seconds
         });
-    gsap.updateRoot(timeElapsed);
-  }
+        gsap.to(this.controls.target, {
+            x: 0,
+            y: 2,
+            z: 0,
+            duration: seconds,
+            onUpdate: function(){
+                controls.update();
+              }
+            });
+        gsap.updateRoot(timeElapsed);
+    }
+}
 
+
+function createRigidbodyOutlineHelper(scene, rigidBody, color = 0xff0000) {
+    const shape = rigidBody.getCollisionShape(); // Get the collision shape of the rigidbody
+    console.log('Shape', rigidBody.getCollisionShape());
+    const halfExtents = shape.getLocalScaling();
+    const margin = shape.getMargin();
+    console.log('Shape', shape.calculateLocalInertia());
+
+    let geometry;
+    // if (shape instanceof Ammo.btSphereShape) {
+    //     const radius = shape.getRadius();
+    //     geometry = new THREE.SphereGeometry(radius, 32, 32);
+    // } else if (shape instanceof Ammo.btBoxShape) {
+    //     const halfExtents = shape.getHalfExtentsWithMargin();
+    //     geometry = new THREE.BoxGeometry(halfExtents.x() * 2, halfExtents.y() * 2, halfExtents.z() * 2);
+    // } else if (shape instanceof Ammo.btCylinderShape) {
+    //     const radius = shape.getRadius();
+    //     const height = shape.getHalfExtentsWithoutMargin().y() * 2;
+    //     geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
+    // } else {
+    //     console.warn("Unsupported shape type for debug visualization.");
+    //     return;
+    // }
+
+    geometry = new THREE.BoxGeometry(halfExtents.x() * 2, halfExtents.y() * 2, halfExtents.z() * 2);
+
+
+    const material = new THREE.MeshBasicMaterial({ color: color, wireframe: true });
+    const mesh = new THREE.Mesh(geometry, material);
+    scene.add(mesh);
+
+    // Update the position and rotation of the mesh according to the rigidbody
+    const transform = rigidBody.getWorldTransform();
+    const position = transform.getOrigin();
+    const quaternion = transform.getRotation();
+    mesh.position.set(position.x(), position.y(), position.z());
+    mesh.quaternion.set(quaternion.x(), quaternion.y(), quaternion.z(), quaternion.w());
+
+    return mesh;
+}
