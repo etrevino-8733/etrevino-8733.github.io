@@ -16,8 +16,16 @@ let CONTROLS_ = null;
 let previousRAF_ = null;
 const DEFAULT_MASS = 10;
 const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
-const CAM_START_POS = new THREE.Vector3(-55, 40, -10);
+const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
 
+const primaryColor = '#F2630F';
+const primaryColorDark = '#5B89A6';
+const secondaryColor = '#86DFDF';
+const tertiaryColor = '#65A87A';
+// const primaryColor = '#B6DBF2';
+// const primaryColorDark = '#7E9ABF';
+// const secondaryColor = '#B6F2D9';
+// const tertiaryColor = '#B6DBF2';
 
 const scene = new THREE.Scene();
 const canvas = document.querySelector('#tech-stack');
@@ -75,9 +83,8 @@ function setupControls(){
         raycaster.ray.intersectPlane(plane, intersectionPoint);
     });
     canvas.addEventListener('click', function(e){
-        console.log('Click', e);
         const sphereGeo = new THREE.SphereGeometry(.5, 32, 32);
-        const sphereMat = new THREE.MeshStandardMaterial({color: '#F2630F', roughness: 0.5, metalness: 0});
+        const sphereMat = new THREE.MeshStandardMaterial({color: primaryColor, roughness: 0.5, metalness: 0});
         
         const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
         sphereMesh.castShadow = true;
@@ -110,7 +117,9 @@ window.addEventListener('DOMContentLoaded', async() => {
         APP_ = new MyWorld();
         CONTROLS_ = new Controls();
         APP_.initialize();
-        CONTROLS_.centerCamera(5);
+        setTimeout(() => {
+            CONTROLS_.centerCamera(5);
+        }, 1000);
     });
     const respawn = document.getElementById('respawn');
     respawn.addEventListener('click', function(){
@@ -124,7 +133,7 @@ window.addEventListener('DOMContentLoaded', async() => {
             APP_.count_ = 0;
             APP_.countdown_ = 1.0;
             APP_.initialize();
-            CONTROLS_.centerCamera(5);
+            CONTROLS_.centerCamera(1);
 
             renderer.render( scene, CONTROLS_.camera );
 
@@ -239,7 +248,7 @@ class MyWorld{
 
         /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(200, 1, 100);
-        const groundMaterial = new THREE.MeshStandardMaterial( {color: '#65A87A', roughness: 0.5, metalness: 0 } );
+        const groundMaterial = new THREE.MeshStandardMaterial( {color: tertiaryColor, roughness: 0.5, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
         scene.add( plane );
@@ -287,7 +296,7 @@ class MyWorld{
                         bevelOffset: 0,
                         bevelSegments: 1,
                     });
-                    const textMaterial = new THREE.MeshStandardMaterial({color: '#86DFDF', roughness: 0.01, metalness: 0});
+                    const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 0.01, metalness: 0});
                     const text = new THREE.Mesh(textGeometry, textMaterial);
                     text.castShadow = true;
                     text.receiveShadow = true;
@@ -339,8 +348,8 @@ class MyWorld{
                 bevelSegments: 1,
             });
             const textMaterial = [
-                new THREE.MeshPhongMaterial( { color: "#F2630F", flatShading: true } ), // front
-                new THREE.MeshPhongMaterial( { color: '#c24e0a' } ) // side
+                new THREE.MeshPhongMaterial( { color: primaryColor, flatShading: true } ), // front
+                new THREE.MeshPhongMaterial( { color: primaryColorDark } ) // side
             ];
             const topText = new THREE.Mesh(textGeometryTop, textMaterial);
             const textBottom = new THREE.Mesh(textGeometryBottom, textMaterial);
@@ -420,7 +429,7 @@ class MyWorld{
         const box = new THREE.Mesh(
           new THREE.BoxGeometry(scale, scale, scale),
           new THREE.MeshStandardMaterial({
-              color: '#F2630F',
+              color: primaryColor,
               roughness: 0.5, 
               metalness: 0
           }));
@@ -453,6 +462,7 @@ class Controls{
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.camera.position.copy(CAM_START_POS);
+        this.camera.position.z = window.innerWidth > 600 ? CAM_START_POS.x : 20;
         
         const light = new THREE.DirectionalLight(0xffffff, 1, 100);
         light.position.set( -50, 50, 50 );
@@ -467,7 +477,9 @@ class Controls{
         light.shadow.camera.top = 40;
         light.shadow.camera.bottom = -50;
         const ambientLight = new THREE.AmbientLight(0xffffff);
+        
         scene.background = new THREE.Color("#dfe2e6"); 
+        scene.fog = new THREE.Fog( 0xcccccc, 10, 500 );
         scene.add(light, ambientLight);
 
         // const lightHelper = new THREE.PointLight( light, 5 );
@@ -482,7 +494,9 @@ class Controls{
         this.controls.maxDistance = 1000;
         this.controls.minPolarAngle = 1;
         this.controls.maxPolarAngle = Math.PI / 2;
-        this.controls.target = new THREE.Vector3(-40, 40, -10);
+        this.controls.target = new THREE.Vector3(-30, 35, -40);
+
+        this.controls.update();
     }
 
     centerCamera(seconds){
@@ -490,8 +504,11 @@ class Controls{
         gsap.to(this.camera.position, {
           x: 0,
           y: 2,
-          z: 30,
-          duration: seconds
+          z: window.innerWidth > 600 ? 30 : 45,
+          duration: seconds,
+            onUpdate: function(){
+              controls.update();
+            }
         });
         gsap.to(this.controls.target, {
             x: 0,
