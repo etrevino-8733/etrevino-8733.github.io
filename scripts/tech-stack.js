@@ -64,9 +64,8 @@ function animate(){
         //     let resultantImpulse = new Ammo.btVector3( 20, 20, 2 )
         //     resultantImpulse.op_mul(scalingFactor);
         
-        //     console.log('Top text', topText.userData.physicsBody);
+        //     console.log('Top text', topText);
         //     let physicsBody = topText.userData.physicsBody;
-        //     physicsBody.translateOnAxis(new THREE.Vector3(0, 1, 0), 0.1);
         // }
   
         APP_.step_(t - previousRAF_);
@@ -394,8 +393,8 @@ class MyWorld{
             rbTextBottom.setFriction(10);
             rbTextBottom.setRollingFriction(10);
 
-            textBottom.userData.physicsBody = rbTextBottom.body_ ;
-            topText.userData.physicsBody = rbTopText.body_;
+            // textBottom.userData.physicsBody = rbTextBottom.body_ ;
+            // topText.userData.physicsBody = rbTopText.body_;
 
             APP_.physicsWorld_.addRigidBody(rbTopText.body_);
             APP_.rigidBodies_.push({ id: "test", mesh: topText, rigidBody: rbTopText });
@@ -423,7 +422,8 @@ class MyWorld{
         //   this.count_ += 1;
         //   this.spawn_();
         // }
-    
+        this.physicsWorld_.stepSimulation(timeElapsedS, 10);
+
         for (let i = 0; i < this.rigidBodies_.length; ++i) {
             if(this.rigidBodies_[i].mesh.position.y < -10){
                 scene.remove(this.rigidBodies_[i].mesh);
