@@ -479,7 +479,7 @@ class Controls{
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         this.camera.position.copy(CAM_START_POS);
-        this.camera.position.z = window.innerWidth > 600 ? CAM_START_POS.x : 20;
+        //this.camera.position.z = window.innerWidth > 600 ? CAM_START_POS.x : 20;
         
         const light = new THREE.DirectionalLight(0xffffff, 1, 100);
         light.position.set( -50, 50, 50 );
