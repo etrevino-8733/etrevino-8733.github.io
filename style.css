@@ -246,6 +246,7 @@ a:hover{
 
     transition: all 0.3s ease-in-out;
     text-decoration: none;
+    z-index: 4;
 }
 
 @keyframes cardAnim {
