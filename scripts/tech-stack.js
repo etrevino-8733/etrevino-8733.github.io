@@ -16,7 +16,12 @@ let CONTROLS_ = null;
 let previousRAF_ = null;
 const DEFAULT_MASS = 10;
 const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
-const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
+// const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
+const CAM_START_POS = new THREE.Vector3(-35, 20, -20);
+const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
+
+let topText = null;
+let textBottom = null;  
 
 const primaryColor = '#F2630F';
 const primaryColorDark = '#5B89A6';
@@ -52,6 +57,17 @@ function animate(){
         if (previousRAF_ === null) {
           previousRAF_ = t;
         }
+
+        // if(topText !== null){
+        //     let scalingFactor = 20;
+    
+        //     let resultantImpulse = new Ammo.btVector3( 20, 20, 2 )
+        //     resultantImpulse.op_mul(scalingFactor);
+        
+        //     console.log('Top text', topText.userData.physicsBody);
+        //     let physicsBody = topText.userData.physicsBody;
+        //     physicsBody.translateOnAxis(new THREE.Vector3(0, 1, 0), 0.1);
+        // }
   
         APP_.step_(t - previousRAF_);
         renderer.render(scene, CONTROLS_.camera);
@@ -296,7 +312,7 @@ class MyWorld{
                         bevelOffset: 0,
                         bevelSegments: 1,
                     });
-                    const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 0.01, metalness: 0});
+                    const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 1, metalness: 0.01});
                     const text = new THREE.Mesh(textGeometry, textMaterial);
                     text.castShadow = true;
                     text.receiveShadow = true;
@@ -334,9 +350,9 @@ class MyWorld{
                 bevelSize: .001,
                 bevelOffset: 0,
                 bevelSegments: 1,
-                mirror: true
+                mirror: true,
             });
-            const textGeometryBottom = new TextGeometry('TECH', {
+            const textGeometryBottom = new TextGeometry('DEV', {
                 font: font,
                 size: logoSize,
                 depth: 5,
@@ -348,11 +364,11 @@ class MyWorld{
                 bevelSegments: 1,
             });
             const textMaterial = [
-                new THREE.MeshPhongMaterial( { color: primaryColor, flatShading: true } ), // front
+                new THREE.MeshPhongMaterial( { color: primaryColor, flatShading: false, specular: primaryColor, shininess: 100, emissive: '000000' } ), // front
                 new THREE.MeshPhongMaterial( { color: primaryColorDark } ) // side
             ];
-            const topText = new THREE.Mesh(textGeometryTop, textMaterial);
-            const textBottom = new THREE.Mesh(textGeometryBottom, textMaterial);
+            topText = new THREE.Mesh(textGeometryTop, textMaterial);
+            textBottom = new THREE.Mesh(textGeometryBottom, textMaterial);
             textBottom.castShadow = true;
             textBottom.position.y = logoPositionY;
             textBottom.position.x = logoPositionX;
@@ -378,8 +394,11 @@ class MyWorld{
             rbTextBottom.setFriction(10);
             rbTextBottom.setRollingFriction(10);
 
+            textBottom.userData.physicsBody = rbTextBottom.body_ ;
+            topText.userData.physicsBody = rbTopText.body_;
+
             APP_.physicsWorld_.addRigidBody(rbTopText.body_);
-            APP_.rigidBodies_.push({ mesh: topText, rigidBody: rbTopText });
+            APP_.rigidBodies_.push({ id: "test", mesh: topText, rigidBody: rbTopText });
             APP_.physicsWorld_.addRigidBody(rbTextBottom.body_);
             APP_.rigidBodies_.push({ mesh: textBottom, rigidBody: rbTextBottom });
         });
@@ -404,8 +423,6 @@ class MyWorld{
         //   this.count_ += 1;
         //   this.spawn_();
         // }
-    
-        this.physicsWorld_.stepSimulation(timeElapsedS, 10);
     
         for (let i = 0; i < this.rigidBodies_.length; ++i) {
             if(this.rigidBodies_[i].mesh.position.y < -10){
@@ -494,32 +511,79 @@ class Controls{
         this.controls.maxDistance = 1000;
         this.controls.minPolarAngle = 1;
         this.controls.maxPolarAngle = Math.PI / 2;
-        this.controls.target = new THREE.Vector3(-30, 35, -40);
+        this.controls.target = TARGET_START_POS;
 
         this.controls.update();
     }
 
-    centerCamera(seconds){
+    async centerCamera(seconds){
+        let controls = this.controls;
+        // gsap.to(this.controls.target, {
+        //     x: 0,
+        //     y: 2,
+        //     z: 0,
+        //     duration: seconds,
+        //     onUpdate: function(){
+        //         controls.update();
+        //       }
+        // });
+        // gsap.to(this.camera.position, {
+        //   x: 0,
+        //   y: 2,
+        //   z: window.innerWidth > 600 ? 30 : 45,
+        //   duration: seconds,
+        //     onUpdate: function(){
+        //       controls.update();
+        //     }
+        // });
+        // gsap.to(this.controls.target, {
+        //     x: 0,
+        //     y: 2,
+        //     z: 0,
+        //     duration: seconds,
+        //     onUpdate: function(){
+        //         controls.update();
+        //       }
+        // });
+
+        // await this.setScene(CAM_START_POS.x + 7, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x + 7, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
+        await this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
+        await this.setScene(-25,5, 5, -20, 5, -2, 2);
+        await this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, 4);
+        //gsap.updateRoot(timeElapsed);
+    }
+
+    setScene(cx, cy, cz,tx ,ty ,tz, seconds){
         let controls = this.controls;
         gsap.to(this.camera.position, {
-          x: 0,
-          y: 2,
-          z: window.innerWidth > 600 ? 30 : 45,
-          duration: seconds,
-            onUpdate: function(){
-              controls.update();
-            }
-        });
-        gsap.to(this.controls.target, {
-            x: 0,
-            y: 2,
-            z: 0,
+            x: cx,
+            y: cy,
+            z: cz,
             duration: seconds,
-            onUpdate: function(){
+            ease: "back.inOut(1)",
+            //ease: "expo.inOut",
+              onUpdate: function(){
                 controls.update();
               }
-            });
-        gsap.updateRoot(timeElapsed);
+          });
+        gsap.to(this.controls.target, {
+              x: tx,
+              y: ty,
+              z: tz,
+              duration: seconds,
+              onUpdate: function(){
+                  controls.update();
+                }
+          });
+        return new Promise((resolve) => {
+            setTimeout(() => {
+                resolve(true);
+            }, seconds * 1000);
+          });
+    }
+    setLights(){
+        scene.remove(this.ambientLight);
+        scene.remove(this.light);
     }
 }
 
