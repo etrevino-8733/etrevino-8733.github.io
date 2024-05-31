@@ -23,14 +23,14 @@ const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
 let topText = null;
 let textBottom = null;  
 
-const primaryColor = '#F2630F';
-const primaryColorDark = '#5B89A6';
-const secondaryColor = '#86DFDF';
-const tertiaryColor = '#65A87A';
-// const primaryColor = '#B6DBF2';
-// const primaryColorDark = '#7E9ABF';
-// const secondaryColor = '#B6F2D9';
-// const tertiaryColor = '#B6DBF2';
+// const primaryColor = '#F2630F';
+// const primaryColorDark = '#5B89A6';
+// const secondaryColor = '#86DFDF';
+// const tertiaryColor = '#65A87A';
+const primaryColor = '#B6DBF2';
+const primaryColorDark = '#10403B';
+const secondaryColor = '#8AA6A3';
+const tertiaryColor = '#10403B';
 
 const scene = new THREE.Scene();
 const canvas = document.querySelector('#tech-stack');
@@ -311,7 +311,7 @@ class MyWorld{
                         bevelOffset: 0,
                         bevelSegments: 1,
                     });
-                    const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 1, metalness: 0.01});
+                    const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 1, metalness: 0.05});
                     const text = new THREE.Mesh(textGeometry, textMaterial);
                     text.castShadow = true;
                     text.receiveShadow = true;
