@@ -67,6 +67,16 @@ function animate(){
         //     console.log('Top text', topText);
         //     let physicsBody = topText.userData.physicsBody;
         // }
+
+        scene.traverse((object) => {
+            if (object.isMesh && object.name === 'star') {
+              object.position.y -= 0.01;
+              object.position.x += Math.sin(object.position.y * 0.1) * 0.01;
+                if (object.position.y < -1) {
+                    object.position.y = 200;
+                }
+            }
+        });
   
         APP_.step_(t - previousRAF_);
         renderer.render(scene, CONTROLS_.camera);
@@ -262,17 +272,56 @@ class MyWorld{
         
 
         /// SET GROUND
-        const groundGeometry = new THREE.BoxGeometry(200, 1, 100);
-        const groundMaterial = new THREE.MeshStandardMaterial( {color: tertiaryColor, roughness: 0.5, metalness: 0 } );
+        const groundGeometry = new THREE.BoxGeometry(400, 1, 200);
+        const groundMaterial = new THREE.MeshStandardMaterial( {color: tertiaryColor, roughness: 0, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
         scene.add( plane );
+
+        // const backWallGeometry = new THREE.BoxGeometry(400, 200, 1);
+        // const backWallMaterial = new THREE.MeshStandardMaterial( {color: '#dfe2e6', roughness: 1, metalness: 0 } );
+        // const backWall = new THREE.Mesh( backWallGeometry, backWallMaterial );
+        // backWall.position.z = -100;
+        // backWall.position.y = 50;
+        // backWall.receiveShadow = false;
+        // scene.add( backWall );
+
+        // const leftWallGeometry = new THREE.BoxGeometry(1, 200, 400);
+        // const leftWallMaterial = new THREE.MeshStandardMaterial( {color: '#dfe2e6', roughness: 1, metalness: 0 } );
+        // const leftWall = new THREE.Mesh( leftWallGeometry, leftWallMaterial );
+        // leftWall.position.x = -200;
+        // leftWall.position.y = 50;
+        // leftWall.receiveShadow = false;
+        // scene.add( leftWall );
+
+        // const rightWallGeometry = new THREE.BoxGeometry(1, 200, 400);
+        // const rightWallMaterial = new THREE.MeshStandardMaterial( {color: '#dfe2e6', roughness: 1, metalness: 0 } );
+        // const rightWall = new THREE.Mesh( rightWallGeometry, rightWallMaterial );
+        // rightWall.position.x = 200;
+        // rightWall.position.y = 50;
+        // rightWall.receiveShadow = false;
+        // scene.add( rightWall );
+        
 
         const rbGround = new RigidBody();
         rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(200, 1, 100));
         rbGround.setRestitution(0.99);
         this.physicsWorld_.addRigidBody(rbGround.body_);
         this.rigidBodies_ = [];
+
+        function addStar() {
+            const geometry = new THREE.SphereGeometry(.05, 10, 10);
+            const material = new THREE.MeshStandardMaterial( { color: 'white', roughness: 0, metalness: 1, emissive: '#454545', flatShading: true})
+            const star = new THREE.Mesh( geometry, material );
+          
+            const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread( 100 ) );
+            star.position.set(x, y, z );
+            star.name = 'star';
+            scene.add(star)
+          
+          }
+          
+          Array(200).fill().forEach(addStar);
 
 
         // SET ENVIRONMENT TEXT
@@ -372,13 +421,14 @@ class MyWorld{
             textBottom.position.y = logoPositionY;
             textBottom.position.x = logoPositionX;
             textBottom.position.z = logoPositionZ;
+            textBottom.name = 'textBottom';
             //textBottom.rotation.y = Math.PI / 2;
             scene.add(textBottom);
             topText.castShadow = true;
             topText.position.y = logoPositionY + logoSize;
             topText.position.x = logoPositionX;
             topText.position.z = logoPositionZ;
-            //topText.rotation.y = Math.PI / 5;
+            topText.name = 'topText';
             scene.add(topText);
 
             const rbTopText = new RigidBody();
@@ -393,8 +443,9 @@ class MyWorld{
             rbTextBottom.setFriction(10);
             rbTextBottom.setRollingFriction(10);
 
-            // textBottom.userData.physicsBody = rbTextBottom.body_ ;
-            // topText.userData.physicsBody = rbTopText.body_;
+
+            textBottom.userData.physicsBody = rbTextBottom.body_ ;
+            topText.userData.physicsBody = rbTopText.body_;
 
             APP_.physicsWorld_.addRigidBody(rbTopText.body_);
             APP_.rigidBodies_.push({ id: "test", mesh: topText, rigidBody: rbTopText });
@@ -423,6 +474,7 @@ class MyWorld{
         //   this.spawn_();
         // }
         this.physicsWorld_.stepSimulation(timeElapsedS, 10);
+
 
         for (let i = 0; i < this.rigidBodies_.length; ++i) {
             if(this.rigidBodies_[i].mesh.position.y < -10){
@@ -496,7 +548,7 @@ class Controls{
         const ambientLight = new THREE.AmbientLight(0xffffff);
         
         scene.background = new THREE.Color("#dfe2e6"); 
-        scene.fog = new THREE.Fog( 0xcccccc, 10, 500 );
+        scene.fog = new THREE.Fog( 0xcccccc, 10, 200 );
         scene.add(light, ambientLight);
 
         // const lightHelper = new THREE.PointLight( light, 5 );
