@@ -10,6 +10,13 @@ import { TextGeometry } from '../libraries/Three/TextGeometry.js';
 // import { Mesh } from '../libraries/Three/three.module.js';
 import gsap from "../libraries/Three/gsap-core.js";
 
+import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/RenderPass.js';
+import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/EffectComposer.js';
+import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/OutputPass.js';
+import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/ShaderPass.js';
+
+
 let timeElapsed = 0;
 let APP_ = null;
 let CONTROLS_ = null;
@@ -19,6 +26,41 @@ const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
 // const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
 const CAM_START_POS = new THREE.Vector3(-35, 20, -20);
 const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
+
+const BLOOM_SCENE = 1;
+const bloomLayer = new THREE.Layers();
+bloomLayer.set(BLOOM_SCENE);
+const darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+const materials = {};
+
+function nonBloomed(obj){
+    if(obj.isMesh && bloomLayer.test(obj.layers) === false){
+        materials[obj.uuid] = obj.material;
+        obj.material = darkMaterial;
+    }
+}
+
+function restoreMaterial(obj){
+    if(materials[obj.uuid]){
+        obj.material = materials[obj.uuid];
+        delete materials[obj.uuid];
+    }
+}
+
+const raycaster = new THREE.Raycaster();
+const mouse = new THREE.Vector2();
+function onPointerDown(event){
+    mouse.x = (event.clientX / (window.innerWidth)) * 2 - 1;
+    mouse.y = -(event.clientY / canvasHeight) * 2 + 1;
+
+    raycaster.setFromCamera(mouse, CONTROLS_.camera);
+    const intersects = raycaster.intersectObjects(scene.children);
+    if(intersects.length > 0){
+        const object = intersects[0].object;
+        object.layers.toggle(BLOOM_SCENE);
+    }
+}
+
 
 let topText = null;
 let textBottom = null;  
@@ -67,6 +109,7 @@ function animate(){
         //     console.log('Top text', topText);
         //     let physicsBody = topText.userData.physicsBody;
         // }
+        scene.traverse(nonBloomed);
 
         scene.traverse((object) => {
             if (object.isMesh && object.name === 'star') {
@@ -79,7 +122,10 @@ function animate(){
         });
   
         APP_.step_(t - previousRAF_);
-        renderer.render(scene, CONTROLS_.camera);
+        CONTROLS_.composer.render();
+        scene.traverse(restoreMaterial);
+        CONTROLS_.finalComposer.render();
+        //renderer.render(scene, CONTROLS_.camera);
         animate();
         previousRAF_ = t;
       });
@@ -89,6 +135,8 @@ function onWindowResize(){
     CONTROLS_.camera.aspect = window.innerWidth / canvasHeight;
     CONTROLS_.camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth - 80, canvasHeight);
+    CONTROLS_.composer.setSize(window.innerWidth - 80, canvasHeight);
+    CONTROLS_.finalComposer.setSize(window.innerWidth - 80, canvasHeight);
   }
 
 function setupControls(){
@@ -160,7 +208,7 @@ window.addEventListener('DOMContentLoaded', async() => {
             APP_.initialize();
             CONTROLS_.centerCamera(1);
 
-            renderer.render( scene, CONTROLS_.camera );
+            //renderer.render( scene, CONTROLS_.camera );
 
         });
     setupControls();   
@@ -260,8 +308,6 @@ class MyWorld{
     constructor(){
     }
     initialize(){
-
-
         this.collisionConfiguration_ = new Ammo.btDefaultCollisionConfiguration();
         this.dispatcher_ = new Ammo.btCollisionDispatcher(this.collisionConfiguration_);
         this.broadphase_ = new Ammo.btDbvtBroadphase();
@@ -367,6 +413,9 @@ class MyWorld{
                     text.position.set(techXPos, techYPos, 0);
                     text.quaternion.set(0, 0, 0, 1);
                     scene.add(text);
+                    
+                    text.layers.toggle(BLOOM_SCENE);
+                    
     
                     const rbText = new RigidBody();
                     rbText.createText(35, new THREE.Vector3(text.position.x, text.position.y, text.position.z), text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
@@ -525,11 +574,50 @@ class Controls{
     camera = new THREE.PerspectiveCamera( 80, window.innerWidth / canvasHeight, 1, 1000 );
     controls = null;
 
+    renderScene = new RenderPass(scene, this.camera);
+    composer = new EffectComposer(renderer);
+    bloomPass = new UnrealBloomPass(
+        new THREE.Vector2(window.innerWidth - 80, canvasHeight), 
+        1, 
+        0.005, 
+        0.05
+    );
+    mixPass = new ShaderPass(
+        new THREE.ShaderMaterial({
+            uniforms: {
+                baseTexture: { value: null },
+                bloomTexture: { value: this.composer.renderTarget2.texture }
+            },
+            vertexShader: document.getElementById('vertexshader').textContent,
+            fragmentShader: document.getElementById('fragmentshader').textContent,
+        }), 'baseTexture'
+    );
+
+    finalComposer = new EffectComposer(renderer);
+
+    outputPass = new OutputPass();
+
     constructor(){
         renderer.setPixelRatio( window.devicePixelRatio );
         renderer.setSize( window.innerWidth - 80, canvasHeight );
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        renderer.toneMapping = THREE.CineionToneMapping;
+        renderer.toneMappingExposure = 1.5;
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        
+        this.composer.setSize(window.innerWidth, canvasHeight);
+        this.composer.addPass(this.renderScene);
+        this.composer.addPass(this.bloomPass);
+        //this.composer.addPass(this.outputPass);
+
+        this.finalComposer.setSize(window.innerWidth, canvasHeight);
+        this.finalComposer.addPass(this.renderScene);
+        this.finalComposer.addPass(this.mixPass);
+        this.finalComposer.addPass(this.outputPass);
+
+        this.composer.renderToScreen = false;
+
         this.camera.position.copy(CAM_START_POS);
         //this.camera.position.z = window.innerWidth > 600 ? CAM_START_POS.x : 20;
         
@@ -547,8 +635,8 @@ class Controls{
         light.shadow.camera.bottom = -50;
         const ambientLight = new THREE.AmbientLight(0xffffff);
         
-        scene.background = new THREE.Color("#dfe2e6"); 
-        scene.fog = new THREE.Fog( 0xcccccc, 10, 200 );
+        //scene.background = new THREE.Color("#dfe2e6"); 
+        //scene.fog = new THREE.Fog( 0xcccccc, 10, 200 );
         scene.add(light, ambientLight);
 
         // const lightHelper = new THREE.PointLight( light, 5 );
@@ -599,9 +687,19 @@ class Controls{
         // });
 
         // await this.setScene(CAM_START_POS.x + 7, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x + 7, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
-        await this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
-        await this.setScene(-25,5, 5, -20, 5, -2, 2);
-        await this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, 4);
+        
+        setTimeout(() => {
+            this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
+        }, 0);
+        setTimeout(() => {
+            this.setScene(-25,5, 5, -20, 5, -2, 2);
+        }, 3500);
+        setTimeout(() => {
+            this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, 4);
+        }, 5500);
+        // await this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
+        // await this.setScene(-25,5, 5, -20, 5, -2, 2);
+        // await this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, 4);
         //gsap.updateRoot(timeElapsed);
     }
 
