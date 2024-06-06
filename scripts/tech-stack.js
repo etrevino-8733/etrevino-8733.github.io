@@ -403,8 +403,8 @@ class MyWorld{
                     console.log('Longest tech', longestTech);
                 }
                 const loader = new FontLoader(loadingManager);
-                const font = loader.load('../assets/fonts/Heebo Black_Regular.json');
-                loader.load('../assets/fonts/Heebo Black_Regular.json', function(font){
+                const font = loader.load('../assets/fonts/Tilt Neon_Regular.json');
+                loader.load('../assets/fonts/Tilt Neon_Regular.json', function(font){
                     const textGeometry = new TextGeometry(tech, {
                         font: font,
                         size: height,
