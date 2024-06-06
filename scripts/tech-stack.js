@@ -1,13 +1,10 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
-//import * as AMMO from 'https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js';
-
-// import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/controls/OrbitControls.js';
-// import { MMDPhysics } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/animation/MMDPhysics.js';
 import { OrbitControls } from '../libraries/Three/OrbitControls.js';
 
 import { FontLoader } from '../libraries/Three/FontLoader.js';
 import { TextGeometry } from '../libraries/Three/TextGeometry.js';
-// import { Mesh } from '../libraries/Three/three.module.js';
+import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/GLTFLoader.js';
+
 import gsap from "../libraries/Three/gsap-core.js";
 
 import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/RenderPass.js';
@@ -24,8 +21,10 @@ let previousRAF_ = null;
 const DEFAULT_MASS = 10;
 const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
 // const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
-const CAM_START_POS = new THREE.Vector3(-35, 20, -20);
-const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
+// const CAM_START_POS = new THREE.Vector3(-35, 20, -20);
+// const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
+const CAM_START_POS = new THREE.Vector3(55, 2, -20);
+const TARGET_START_POS = new THREE.Vector3(57, 35, -25);
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new THREE.Layers();
@@ -109,23 +108,17 @@ function animate(){
           previousRAF_ = t;
         }
 
-        // if(topText !== null){
-        //     let scalingFactor = 20;
-    
-        //     let resultantImpulse = new Ammo.btVector3( 20, 20, 2 )
-        //     resultantImpulse.op_mul(scalingFactor);
-        
-        //     console.log('Top text', topText);
-        //     let physicsBody = topText.userData.physicsBody;
-        // }
         scene.traverse(nonBloomed);
 
         scene.traverse((object) => {
             if (object.isMesh && object.name === 'star') {
-              object.position.y -= 0.01;
-              object.position.x += Math.sin(object.position.y * 0.1) * 0.01;
-                if (object.position.y < -1) {
-                    object.position.y = 200;
+                //object.position.y -= Math.sin(object.position.x * 0.1) * 0.01;
+                object.position.y -= object.position.y * object.velocity;
+
+                object.position.x += Math.sin(object.position.y * 0.1) * 0.1;
+                if (object.position.y < 1) {
+                    object.position.y = 100;
+                    object.position.x = Math.random() * 200 - 100;
                 }
             }
         });
@@ -217,9 +210,6 @@ window.addEventListener('DOMContentLoaded', async() => {
             APP_.countdown_ = 1.0;
             APP_.initialize();
             CONTROLS_.centerCamera(10);
-
-            //renderer.render( scene, CONTROLS_.camera );
-
         });
     setupControls();   
 });
@@ -324,12 +314,63 @@ class MyWorld{
         this.solver_ = new Ammo.btSequentialImpulseConstraintSolver();
         this.physicsWorld_ = new Ammo.btDiscreteDynamicsWorld(
             this.dispatcher_, this.broadphase_, this.solver_, this.collisionConfiguration_);
-        this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));  
+        this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));
+
+
+                // buildings
+
+        // const coffeeShop = new GLTFLoader(loadingManager); coffeeShop.load('../assets/scenes/cyberpunk_isometric_coffee_shop_cycles/scene.gltf', function( gltf ) {
+        //     gltf.scene.position.x = -40;
+        //     gltf.scene.position.y = 0;
+        //     gltf.scene.position.z = -20;
+        //     gltf.scene.rotation.y = 1.57;
+        //     gltf.scene.scale.set(5, 5, 5);
+        //     gltf.scene.name = "coffeeShop";
+        //     gltf.scene.traverse( function( node ) {
+          
+        //       //  node.castShadow = true; 
+        //       //  node.receiveShadow = true;
+          
+        //   } );
+        //   scene.add( gltf.scene);
+        //   }, undefined, function ( error ) { console.error(error); });
+
+        //   const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store/scene.gltf', function( gltf ) {
+        //     gltf.scene.position.x = 40;
+        //     gltf.scene.position.y = 2;
+        //     gltf.scene.position.z = -20;
+        //     gltf.scene.rotation.y = -1.57;
+        //     gltf.scene.scale.set(5, 5, 5);
+        //     gltf.scene.name = "coffeeShop";
+        //     gltf.scene.traverse( function( node ) {
+          
+        //       //  node.castShadow = true; 
+        //       //  node.receiveShadow = true;
+          
+        //   } );
+        //   scene.add( gltf.scene);
+        //   }, undefined, function ( error ) { console.error(error); });
+
+        const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store/scene.gltf', function( gltf ) {
+            gltf.scene.position.x = 0;
+            gltf.scene.position.y = 2;
+            gltf.scene.position.z = -20;
+            gltf.scene.rotation.y = -1.87;
+            gltf.scene.scale.set(10, 10, 10);
+            gltf.scene.name = "coffeeShop";
+            gltf.scene.traverse( function( node ) {
+          
+              //  node.castShadow = true; 
+              //  node.receiveShadow = true;
+          
+          } );
+          scene.add( gltf.scene);
+          }, undefined, function ( error ) { console.error(error); });
         
 
         /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(400, 1, 200);
-        const groundMaterial = new THREE.MeshStandardMaterial( {color: tertiaryColor, roughness: 0, metalness: 0 } );
+        const groundMaterial = new THREE.MeshStandardMaterial( {color: 'black', roughness: 0, metalness: 0 } );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
         scene.add( plane );
@@ -366,41 +407,106 @@ class MyWorld{
         this.rigidBodies_ = [];
 
         function addStar() {
-            const geometry = new THREE.SphereGeometry(.05, 10, 10);
-            const material = new THREE.MeshStandardMaterial( { color: 'white', roughness: 0, metalness: 1, emissive: '#454545', flatShading: true})
+            const geometry = new THREE.SphereGeometry(.05, .1, .1);
+            // const material = new THREE.PointsMaterial( { color: 'white', roughness: 0, metalness: 1, emissive: '#454545', flatShading: true})
+            const material = new THREE.PointsMaterial( { color: 0Xaaaaaa, size: 0.1, transparent: true})
             const star = new THREE.Mesh( geometry, material );
           
-            const [x, y, z] = Array(3).fill().map(() => THREE.MathUtils.randFloatSpread( 100 ) );
-            star.position.set(x, y, z );
+            const [x, z] = Array(2).fill().map(() => THREE.MathUtils.randFloatSpread( 100 ) );
+            const y = THREE.MathUtils.randFloat( 0, 200 ) ;
+            console.log('Star', x, y, z);
+            star.position.set(
+                Math.random() * 200 - 100,
+                Math.random() * 400 - 200,
+                Math.random() * 200 - 100
+             );
+            star.velocity = (Math.random() * 0.1) + .01;
             star.name = 'star';
             scene.add(star)
           
           }
           
-          Array(200).fill().forEach(addStar);
+          Array(1000).fill().forEach(addStar);
 
 
         // SET ENVIRONMENT TEXT
+        // const stack = [
+        //     {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
+        //     {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
+        //     {"tech": ["TypeScript", "JavaScript", "HTML", "CSS", "SASS", "C#"]},
+        // ];
+        // let height = 2;
+        // let startXPos = -25;
+        // let longestTech = 0;
+        // for (let x = 0; x < stack.length; x++){
+        //     startXPos = startXPos + (longestTech * height);
+        //     longestTech = 0;
+        //     for (let i = 0; i < stack[x].tech.length; i++){
+        //         const techYPos = i * height + 1;
+
+        //         const tech = stack[x].tech[i];
+        //         const techXPos = startXPos;
+
+        //         if (tech.length > longestTech){
+        //             longestTech = tech.length;
+        //             console.log('Longest tech', longestTech);
+        //         }
+        //         const loader = new FontLoader(loadingManager);
+        //         const font = loader.load('../assets/fonts/Tilt Neon_Regular.json');
+        //         loader.load('../assets/fonts/Tilt Neon_Regular.json', function(font){
+        //             const textGeometry = new TextGeometry(tech, {
+        //                 font: font,
+        //                 size: height,
+        //                 depth: .3,
+        //                 curveSegments: .01,
+        //                 bevelEnabled: true,
+        //                 bevelThickness: .0022,
+        //                 bevelSize: .001,
+        //                 bevelOffset: 0,
+        //                 bevelSegments: 1,
+        //             });
+        //             const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 1, metalness: 0.05});
+        //             const text = new THREE.Mesh(textGeometry, textMaterial);
+        //             text.castShadow = true;
+        //             text.receiveShadow = true;
+        //             text.position.set(techXPos, techYPos, 0);
+        //             text.quaternion.set(0, 0, 0, 1);
+        //             text.name = 'text';
+
+        //             scene.add(text);
+    
+        //             const rbText = new RigidBody();
+        //             rbText.createText(35, new THREE.Vector3(text.position.x, text.position.y, text.position.z), text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
+        //             rbText.setRestitution(0);
+        //             rbText.setFriction(.5);
+        //             rbText.setRollingFriction(0);
+        //             APP_.physicsWorld_.addRigidBody(rbText.body_);
+        //             APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
+        //             //createRigidbodyOutlineHelper(scene, rbText.body_, 0x86DFDF);
+
+        //         });
+        //     }
+        // }
+
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
             {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
             {"tech": ["TypeScript", "JavaScript", "HTML", "CSS", "SASS", "C#"]},
         ];
-        let height = 2;
-        let startXPos = -25;
+        let height = 1.5;
+        let startXPos = -7;
         let longestTech = 0;
         for (let x = 0; x < stack.length; x++){
-            startXPos = startXPos + (longestTech * height);
+            startXPos = startXPos + (longestTech * height) - height;
             longestTech = 0;
             for (let i = 0; i < stack[x].tech.length; i++){
-                const techYPos = i * height + 1;
+                const techYPos = i * height + 15;
 
                 const tech = stack[x].tech[i];
                 const techXPos = startXPos;
 
                 if (tech.length > longestTech){
                     longestTech = tech.length;
-                    console.log('Longest tech', longestTech);
                 }
                 const loader = new FontLoader(loadingManager);
                 const font = loader.load('../assets/fonts/Tilt Neon_Regular.json');
@@ -415,40 +521,35 @@ class MyWorld{
                         bevelSize: .001,
                         bevelOffset: 0,
                         bevelSegments: 1,
+                        margin: 0.05
                     });
                     const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 1, metalness: 0.05});
                     const text = new THREE.Mesh(textGeometry, textMaterial);
                     text.castShadow = true;
                     text.receiveShadow = true;
-                    text.position.set(techXPos, techYPos, 0);
+                    text.position.set(techXPos, techYPos, -12);
                     text.quaternion.set(0, 0, 0, 1);
                     text.name = 'text';
 
                     scene.add(text);
-    
-                    const rbText = new RigidBody();
-                    rbText.createText(35, new THREE.Vector3(text.position.x, text.position.y, text.position.z), text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
-                    rbText.setRestitution(0);
-                    rbText.setFriction(.5);
-                    rbText.setRollingFriction(0);
-                    APP_.physicsWorld_.addRigidBody(rbText.body_);
-                    APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
-                    //createRigidbodyOutlineHelper(scene, rbText.body_, 0x86DFDF);
-
                 });
             }
         }
 
-        const logoSize = 10;
-        const logoPositionX = -50;
-        const logoPositionZ = -30;
+        // const logoSize = 10;
+        // const logoPositionX = -50;
+        // const logoPositionZ = -30;
+        // const logoPositionY = 25;
+        const logoSize = 7;
+        const logoPositionX = 50;
+        const logoPositionZ = -10;
         const logoPositionY = 25;
         const loader = new FontLoader(loadingManager);
-        loader.load('../assets/fonts/Heebo Black_Regular.json', function(font){
+        loader.load('../assets/fonts/Michroma_Regular.json', function(font){
             const textGeometryTop = new TextGeometry('ET', {
                 font: font,
                 size: logoSize,
-                depth: 5,
+                depth: 1,
                 curveSegments: .01,
                 bevelEnabled: true,
                 bevelThickness: .0022,
@@ -460,7 +561,7 @@ class MyWorld{
             const textGeometryBottom = new TextGeometry('DEV', {
                 font: font,
                 size: logoSize,
-                depth: 5,
+                depth: 1,
                 curveSegments: .01,
                 bevelEnabled: true,
                 bevelThickness: .0022,
@@ -479,7 +580,6 @@ class MyWorld{
             textBottom.position.x = logoPositionX;
             textBottom.position.z = logoPositionZ;
             textBottom.name = 'textBottom';
-            //textBottom.rotation.y = Math.PI / 2;
             scene.add(textBottom);
             topText.castShadow = true;
             topText.position.y = logoPositionY + logoSize;
@@ -515,7 +615,7 @@ class MyWorld{
 
         this.countdown_ = 1.0;
         this.count_ = 0;
-        this.previousRAF_ = null;
+        this.previousRAF_ = null;          
 
         animate();
     }
@@ -524,12 +624,6 @@ class MyWorld{
         const timeElapsedS = timeElapsed * 0.001;
 
         this.countdown_ -= timeElapsedS;
-        // if (this.countdown_ < 0 && this.count_ < 12) {
-        //     console.log('Spawn', this.countdown_);
-        //   this.countdown_ = 0.25;
-        //   this.count_ += 1;
-        //   this.spawn_();
-        // }
         this.physicsWorld_.stepSimulation(timeElapsedS, 10);
 
 
@@ -586,7 +680,7 @@ class Controls{
     composer = new EffectComposer(renderer);
     bloomPass = new UnrealBloomPass(
         new THREE.Vector2(window.innerWidth - 80, canvasHeight), 
-        1, 
+        1.2, 
         0.005, 
         0.05
     );
@@ -620,7 +714,6 @@ class Controls{
 
 
         this.camera.position.copy(CAM_START_POS);
-        //this.camera.position.z = window.innerWidth > 600 ? CAM_START_POS.x : 20;
         
         const light = new THREE.DirectionalLight(0xffffff, 1, 100);
         light.position.set( -50, 50, 50 );
@@ -635,8 +728,8 @@ class Controls{
         light.shadow.camera.bottom = -50;
         const ambientLight = new THREE.AmbientLight(0xffffff);
         
-        //scene.background = new THREE.Color("#dfe2e6"); 
-        //scene.fog = new THREE.Fog( 0xcccccc, 10, 200 );
+        scene.fog = new THREE.Fog( 0x000000, 1, 200 );
+
         scene.add(light, ambientLight);
 
         // const lightHelper = new THREE.PointLight( light, 5 );
@@ -662,10 +755,10 @@ class Controls{
             this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, seconds * 0.4); 
         }, 0);
         setTimeout(() => {
-            this.setScene(-25,5, 5, -20, 5, -2, seconds * 0.2);
+            this.setScene(-10, 10, 5, -5, 10, -2, seconds * 0.2);
         }, (ms * .4) - 500);
         setTimeout(() => {
-            this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, seconds * 0.4);
+            this.setScene(0, 20, window.innerWidth > 600 ? 30 : 45, 0, 20, 0, seconds * 0.4);
         }, (ms * .6) - 500);
         setTimeout(() => {
             flickerStack();
@@ -680,7 +773,6 @@ class Controls{
             z: cz,
             duration: seconds,
             ease: "back.inOut(1)",
-            //ease: "expo.inOut",
               onUpdate: function(){
                 controls.update();
               }
@@ -727,20 +819,6 @@ function createRigidbodyOutlineHelper(scene, rigidBody, color = 0xff0000) {
     console.log('Shape', shape.calculateLocalInertia());
 
     let geometry;
-    // if (shape instanceof Ammo.btSphereShape) {
-    //     const radius = shape.getRadius();
-    //     geometry = new THREE.SphereGeometry(radius, 32, 32);
-    // } else if (shape instanceof Ammo.btBoxShape) {
-    //     const halfExtents = shape.getHalfExtentsWithMargin();
-    //     geometry = new THREE.BoxGeometry(halfExtents.x() * 2, halfExtents.y() * 2, halfExtents.z() * 2);
-    // } else if (shape instanceof Ammo.btCylinderShape) {
-    //     const radius = shape.getRadius();
-    //     const height = shape.getHalfExtentsWithoutMargin().y() * 2;
-    //     geometry = new THREE.CylinderGeometry(radius, radius, height, 32);
-    // } else {
-    //     console.warn("Unsupported shape type for debug visualization.");
-    //     return;
-    // }
 
     geometry = new THREE.BoxGeometry(halfExtents.x() * 2, halfExtents.y() * 2, halfExtents.z() * 2);
 
