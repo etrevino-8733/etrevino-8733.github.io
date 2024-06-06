@@ -30,7 +30,7 @@ const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
 const BLOOM_SCENE = 1;
 const bloomLayer = new THREE.Layers();
 bloomLayer.set(BLOOM_SCENE);
-const darkMaterial = new THREE.MeshBasicMaterial({ color: "black" });
+const darkMaterial = new THREE.MeshBasicMaterial({ color:  0x000000 });
 const materials = {};
 
 function nonBloomed(obj){
@@ -73,6 +73,8 @@ const primaryColor = '#B6DBF2';
 const primaryColorDark = '#10403B';
 const secondaryColor = '#8AA6A3';
 const tertiaryColor = '#10403B';
+const canvasHeight = 500;
+
 
 const scene = new THREE.Scene();
 const canvas = document.querySelector('#tech-stack');
@@ -80,7 +82,14 @@ const renderer = new THREE.WebGLRenderer({
     canvas: document.querySelector('#tech-stack'),
     antialias: true,
   });
-const canvasHeight = 500;
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.setSize( window.innerWidth - 80, canvasHeight );
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.CineionToneMapping;
+renderer.toneMappingExposure = 1.5;
+renderer.outputEncoding = THREE.sRGBEncoding;
+
 
 const loadingManager = new THREE.LoadingManager();
 
@@ -137,6 +146,7 @@ function onWindowResize(){
     renderer.setSize(window.innerWidth - 80, canvasHeight);
     CONTROLS_.composer.setSize(window.innerWidth - 80, canvasHeight);
     CONTROLS_.finalComposer.setSize(window.innerWidth - 80, canvasHeight);
+
   }
 
 function setupControls(){
@@ -191,7 +201,7 @@ window.addEventListener('DOMContentLoaded', async() => {
         CONTROLS_ = new Controls();
         APP_.initialize();
         setTimeout(() => {
-            CONTROLS_.centerCamera(5);
+            CONTROLS_.centerCamera(10);
         }, 1000);
     });
     const respawn = document.getElementById('respawn');
@@ -206,7 +216,7 @@ window.addEventListener('DOMContentLoaded', async() => {
             APP_.count_ = 0;
             APP_.countdown_ = 1.0;
             APP_.initialize();
-            CONTROLS_.centerCamera(1);
+            CONTROLS_.centerCamera(10);
 
             //renderer.render( scene, CONTROLS_.camera );
 
@@ -412,10 +422,9 @@ class MyWorld{
                     text.receiveShadow = true;
                     text.position.set(techXPos, techYPos, 0);
                     text.quaternion.set(0, 0, 0, 1);
+                    text.name = 'text';
+
                     scene.add(text);
-                    
-                    text.layers.toggle(BLOOM_SCENE);
-                    
     
                     const rbText = new RigidBody();
                     rbText.createText(35, new THREE.Vector3(text.position.x, text.position.y, text.position.z), text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
@@ -435,7 +444,6 @@ class MyWorld{
         const logoPositionZ = -30;
         const logoPositionY = 25;
         const loader = new FontLoader(loadingManager);
-        const font = loader.load('../assets/fonts/Heebo Black_Regular.json');
         loader.load('../assets/fonts/Heebo Black_Regular.json', function(font){
             const textGeometryTop = new TextGeometry('ET', {
                 font: font,
@@ -571,7 +579,7 @@ class MyWorld{
 }
 
 class Controls{
-    camera = new THREE.PerspectiveCamera( 80, window.innerWidth / canvasHeight, 1, 1000 );
+    camera = new THREE.PerspectiveCamera( 80, window.innerWidth  / canvasHeight, 1, 1000 );
     controls = null;
 
     renderScene = new RenderPass(scene, this.camera);
@@ -597,33 +605,25 @@ class Controls{
 
     outputPass = new OutputPass();
 
-    constructor(){
-        renderer.setPixelRatio( window.devicePixelRatio );
-        renderer.setSize( window.innerWidth - 80, canvasHeight );
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        renderer.toneMapping = THREE.CineionToneMapping;
-        renderer.toneMappingExposure = 1.5;
-        renderer.outputEncoding = THREE.sRGBEncoding;
-        
-        this.composer.setSize(window.innerWidth, canvasHeight);
+    constructor(){        
+        this.composer.setSize(window.innerWidth - 80, canvasHeight);
         this.composer.addPass(this.renderScene);
         this.composer.addPass(this.bloomPass);
+        this.composer.renderToScreen = false;
+
         //this.composer.addPass(this.outputPass);
 
-        this.finalComposer.setSize(window.innerWidth, canvasHeight);
+        this.finalComposer.setSize(window.innerWidth - 80, canvasHeight);
         this.finalComposer.addPass(this.renderScene);
         this.finalComposer.addPass(this.mixPass);
         this.finalComposer.addPass(this.outputPass);
 
-        this.composer.renderToScreen = false;
 
         this.camera.position.copy(CAM_START_POS);
         //this.camera.position.z = window.innerWidth > 600 ? CAM_START_POS.x : 20;
         
         const light = new THREE.DirectionalLight(0xffffff, 1, 100);
         light.position.set( -50, 50, 50 );
-        light.p
         light.castShadow = true;
         light.shadow.mapSize.width = 512; // default
         light.shadow.mapSize.height = 512; // default
@@ -657,50 +657,19 @@ class Controls{
     }
 
     async centerCamera(seconds){
-        let controls = this.controls;
-        // gsap.to(this.controls.target, {
-        //     x: 0,
-        //     y: 2,
-        //     z: 0,
-        //     duration: seconds,
-        //     onUpdate: function(){
-        //         controls.update();
-        //       }
-        // });
-        // gsap.to(this.camera.position, {
-        //   x: 0,
-        //   y: 2,
-        //   z: window.innerWidth > 600 ? 30 : 45,
-        //   duration: seconds,
-        //     onUpdate: function(){
-        //       controls.update();
-        //     }
-        // });
-        // gsap.to(this.controls.target, {
-        //     x: 0,
-        //     y: 2,
-        //     z: 0,
-        //     duration: seconds,
-        //     onUpdate: function(){
-        //         controls.update();
-        //       }
-        // });
-
-        // await this.setScene(CAM_START_POS.x + 7, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x + 7, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
-        
+        let ms = seconds * 1000;
         setTimeout(() => {
-            this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
+            this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, seconds * 0.4); 
         }, 0);
         setTimeout(() => {
-            this.setScene(-25,5, 5, -20, 5, -2, 2);
-        }, 3500);
+            this.setScene(-25,5, 5, -20, 5, -2, seconds * 0.2);
+        }, (ms * .4) - 500);
         setTimeout(() => {
-            this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, 4);
-        }, 5500);
-        // await this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, 4); 
-        // await this.setScene(-25,5, 5, -20, 5, -2, 2);
-        // await this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, 4);
-        //gsap.updateRoot(timeElapsed);
+            this.setScene(0, 2, window.innerWidth > 600 ? 30 : 45, 0, 2, 0, seconds * 0.4);
+        }, (ms * .6) - 500);
+        setTimeout(() => {
+            flickerStack();
+        }, ms);
     }
 
     setScene(cx, cy, cz,tx ,ty ,tz, seconds){
@@ -737,6 +706,18 @@ class Controls{
     }
 }
 
+function flickerStack(){
+    let stack = scene.children.filter((child) => child.name === 'text');
+    console.log('Stack', stack);
+    for(let i = 0; i < 7; i++){
+        setTimeout(() => {
+            stack.forEach((text) => {
+                text.layers.toggle(BLOOM_SCENE);
+            });
+        }, 700/Math.pow(2, i));
+    }
+
+}
 
 function createRigidbodyOutlineHelper(scene, rigidBody, color = 0xff0000) {
     const shape = rigidBody.getCollisionShape(); // Get the collision shape of the rigidbody
