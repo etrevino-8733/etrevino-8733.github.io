@@ -16,46 +16,24 @@ function isMobile() {
 
   }
 
-window.onload = function(){
-    var mobileRes = document.getElementById('mobile-res');
-    var desktopRes = document.getElementById('desktop-res');
-    const regex = /Mobi|Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i;
-    var isMobile = regex.test(navigator.userAgent);
+let welcomeMessage;
+window.onload = async function(){
+    welcomeMessage = document.getElementById('welcome-message');
 
-    if(isMobile){
-        desktopRes.remove();
+    myMessages = ['WELCOME!', 'USE CHROME FOR BEST EXPERIENCE', 'GETTING THINGS READY, PLEASE BE PATIENT...'];
 
-    } else{
-        mobileRes.remove();
+    for(let i = 0; i < myMessages.length; i++){
+        setTimeout(function(){
+            welcomeMessage.style.opacity = 1;
+            welcomeMessage.innerHTML = myMessages[i];
+        }, i * 5000);
+
+        if(i < myMessages.length - 1){
+            setTimeout(function(){
+                welcomeMessage.style.opacity = 0;
+            }
+            , i * 5000 + 3000);
+        }
+
     }
-};
-
-// window.addEventListener('scroll', function(){
-//     var stackCards = document.getElementsByClassName('stack-card');
-
-//     for(let i = 0; i < stackCards.length; i++){
-//         var cardTop = stackCards[i].getBoundingClientRect().top;
-//         if(cardTop < window.innerHeight){
-//             stackCards[i].style.animation = `cardAnim 1s ease forwards .3s`;
-
-//         } else{
-//         }        
-//     };
-// });
-
-// const stackElements = document.getElementsByClassName('stack-element');
-// document.addEventListener('pointermove', function(e){
-//     const {clientX, clientY} = e;
-
-//     for(let i = 0; i < stackElements.length; i++){
-
-//         let elementY = stackElements[i].getBoundingClientRect().top + stackElements[i].clientHeight / 2;
-//         let elementX = stackElements[i].getBoundingClientRect().left + stackElements[i].clientWidth / 2;
-//         console.log("element:",elementX, elementY);
-//         console.log("Client",clientX, clientY);
-//         stackElements[i].animate({
-//             transform: `rotateY(${(elementX - clientX) * .05}deg) rotateX(${(elementY - clientY) * .09}deg)`,
-//         }, {duration: 1000, fill: 'forwards'})
-//     }
-    
-// });
+}
