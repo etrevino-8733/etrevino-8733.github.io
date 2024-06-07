@@ -52,4 +52,27 @@
     </script>
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
     <script type="module" src="/scripts/tech-stack.js"></script>
+    <script type="text/javascript">
+        let welcomeMessage;
+        window.onload = async function(){
+            welcomeMessage = document.getElementById('welcome-message');
+
+            myMessages = ['WELCOME!', 'USE CHROME FOR BEST EXPERIENCE', 'GETTING THINGS READY, PLEASE BE PATIENT...'];
+
+            for(let i = 0; i < myMessages.length; i++){
+                setTimeout(function(){
+                    welcomeMessage.style.opacity = 1;
+                    welcomeMessage.innerHTML = myMessages[i];
+                }, i * 5000);
+
+                if(i < myMessages.length - 1){
+                    setTimeout(function(){
+                        welcomeMessage.style.opacity = 0;
+                    }
+                    , i * 5000 + 3000);
+                }
+
+            }
+        }
+    </script>
 </body>
