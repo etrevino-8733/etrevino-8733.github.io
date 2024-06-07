@@ -1,4 +1,4 @@
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js';
+import * as THREE from '../libraries/Three/three.module.js';
 import { OrbitControls } from '../libraries/Three/OrbitControls.js';
 
 import { FontLoader } from '../libraries/Three/FontLoader.js';
@@ -12,7 +12,7 @@ import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examp
 import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/ShaderPass.js';
-import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
+// import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
 
 
 let timeElapsed = 0;
@@ -85,6 +85,7 @@ loadingManager.onProgress = function(url, loaded, total){
 const progressBarContainer = document.querySelector('.progress-bar-container');
 loadingManager.onLoad = function(){
    progressBarContainer.style.display = 'none';
+   
    CONTROLS_.centerCamera(10);
  }
 
@@ -185,6 +186,7 @@ window.addEventListener('DOMContentLoaded', async() => {
         APP_ = new MyWorld();
         CONTROLS_ = new Controls();
         APP_.initialize();
+        animate();
     });
     const respawn = document.getElementById('respawn');
     respawn.addEventListener('click', function(){
@@ -503,7 +505,7 @@ class MyWorld{
         this.count_ = 0;
         this.previousRAF_ = null;          
 
-        animate();
+        //animate();
     }
 
     step_(timeElapsed){
@@ -614,7 +616,7 @@ class Controls{
         light.shadow.camera.bottom = -50;
         const ambientLight = new THREE.AmbientLight(0xffffff);
         
-        scene.fog = new THREE.Fog( 0x000000, 1, 200 );
+        scene.fog = new THREE.Fog( 0x000000, 50, 200 );
 
         scene.add(light, ambientLight);
 
@@ -683,10 +685,6 @@ class Controls{
                 resolve(true);
             }, seconds * 1000);
           });
-    }
-    setLights(){
-        scene.remove(this.ambientLight);
-        scene.remove(this.light);
     }
 }
 
