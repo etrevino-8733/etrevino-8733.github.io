@@ -4,88 +4,28 @@
     <meta charset="UTF-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ET Tech</title>
+    <title>ET DEV</title>
     <script type="text/javascript" src="scripts.js"></script>
     <link rel="stylesheet" href="style.css">
     <script src="https://kit.fontawesome.com/455847c679.js" crossorigin="anonymous"></script>
     <script defer type="text/javascript" src="libraries/TopNav/TopNav.js"></script>
 </head>
-<body>
-    <header class="header">
-        <et-top-nav nav-items='[{"name": "Home", "link": "index.html"},{"name": "Projects", "link": "#projects"}]'>
+<body style="margin: 0;">
+    <header class="header" style="position: fixed; width: 100%; margin: 0; padding: 10px">
+        <et-top-nav nav-items='[{"name": "Home", "link": "index.html"}, {"name": "About Me", "link": "about-me.html"},{"name": "Projects", "link": "about-me.html#projects"}]'>
         </et-top-nav>
     </header>
-    <section>
-    </section>
-    <section>
-        <div id="tech-stack-container" class="card">
-            <canvas id="tech-stack"></canvas>
-            <div class="progress-bar-container">
-                <label for="progress-bar">Loading... </label>
-                <div class="spinner"></div>
-                <progress id="progress-bar" value="0" max="100"></progress>
-            </div>
-            <button id="respawn" class="reset-btn">Reset</button>
+    <div id="tech-stack-container" tabindex="1">
+        <canvas id="tech-stack"></canvas>
+        <div class="progress-bar-container">
+            <div>Use Chrome For Best Experience</div>
+            <label for="progress-bar">Loading... </label>
+            <div class="spinner"></div>
+            <progress id="progress-bar" value="0" max="100"></progress>
         </div>
-        <h1>About Me</h1>
-        <div class="card">
-            <p>Hi, my name is Emmanuel Trevino.
-                I am a software devoloper who specializes in the development of software solutions for big data companies.  In my experience, I have worked on a variety of projects that have allowed me to develop my skills in programming, data analysis, and machine learning.
-                I have a passion for technology and I am always looking for new ways to improve my skills. I am currently working on a project that involves the development of a software solution for the oil and gas industry. 
-                I am excited to see where this project takes me and I am looking forward to sharing my progress with you.
-            </p>
-        </div>
-    </section>
-    <section id="projects">
-        <h1>Projects</h1>
-        <div class="card">
-            <p>This is a feature from the software software I build for an oil company that specializes in scanning and inspecting pipes used in oil wells.  
-                My software helped the client manage and share detaild data of the pitting and rodware for each pipe they scaned at each location. 
-                The software also allowed my client to share the scan data with their customers. Each of their customers had an account on the web application where they could request scan jobs, view invoices through an integration with Quickbooks, and generate reports for each of their well locations.</p>
-            <a class="project-btn" href="./Three/three.html" target="_blank">View Feature</a>
-        </div>
-    </section>
-    <section>
-        <h1>Tech Stack</h1>
-        <div class="stack-container">
-            <div class="stack-card">
-                <h2>Frontend</h2>
-                <ul>
-                    <li class="stack-element">HTML</li>
-                    <li class="stack-element">Sass</li>
-                    <li class="stack-element">JavaScript</li>
-                    <li class="stack-element">TypeScript</li>
-                    <li class="stack-element">Angular</li>
-                    <li class="stack-element">Web Components</li>
-                    <li class="stack-element">RxJS</li>
-                    <li class="stack-element">jQuery</li>
-                    <li class="stack-element">AJAX</li>
-                    <li class="stack-element">NX</li>
-                </ul>
-            </div>
-            <div class="stack-card">
-                <h2>Backend</h2>
-                <ul>
-                    <li class="stack-element">C#</li>
-                    <li class="stack-element">Node.js</li>
-                    <li class="stack-element">.Net 8</li>
-                    <li class="stack-element">Docker</li>
-                    <li class="stack-element">Microservices</li>
-                    <li class="stack-element">REST APIs</li>
-                    <li class="stack-element">Swagger / Open API</li>
-                    <li class="stack-element">Entity Framework</li>
-                    <li class="stack-element">Azure</li>
-                </ul>
-            </div>
-            <div class="stack-card">
-                <h2>Database</h2>
-                <ul>
-                    <li class="stack-element">SQL</li>
-                    <li class="stack-element">MongoDB</li>
-                </ul>
-            </div>
-        </div>
-    </section>
+        <button id="respawn" class="reset-btn" style="z-index: 999; position: fixed; bottom: 0; left: 0;">Reset</button>
+    </div>
+
     <script type="importmap">
         {
           "imports": {

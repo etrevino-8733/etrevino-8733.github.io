@@ -12,6 +12,7 @@ import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examp
 import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/ShaderPass.js';
+import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
 
 
 let timeElapsed = 0;
@@ -33,7 +34,7 @@ const darkMaterial = new THREE.MeshBasicMaterial({ color:  0x000000 });
 const materials = {};
 
 function nonBloomed(obj){
-    if(obj.isMesh && bloomLayer.test(obj.layers) === false){
+    if((obj.isMesh || obj.isPoints) && bloomLayer.test(obj.layers) === false){
         materials[obj.uuid] = obj.material;
         obj.material = darkMaterial;
     }
@@ -46,33 +47,17 @@ function restoreMaterial(obj){
     }
 }
 
-const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-function onPointerDown(event){
-    mouse.x = (event.clientX / (window.innerWidth)) * 2 - 1;
-    mouse.y = -(event.clientY / canvasHeight) * 2 + 1;
+let raycaster;
 
-    raycaster.setFromCamera(mouse, CONTROLS_.camera);
-    const intersects = raycaster.intersectObjects(scene.children);
-    if(intersects.length > 0){
-        const object = intersects[0].object;
-        object.layers.toggle(BLOOM_SCENE);
-    }
-}
 
 
 let topText = null;
 let textBottom = null;  
 
-// const primaryColor = '#F2630F';
-// const primaryColorDark = '#5B89A6';
-// const secondaryColor = '#86DFDF';
-// const tertiaryColor = '#65A87A';
 const primaryColor = '#B6DBF2';
 const primaryColorDark = '#10403B';
 const secondaryColor = '#8AA6A3';
 const tertiaryColor = '#10403B';
-const canvasHeight = 500;
 
 
 const scene = new THREE.Scene();
@@ -82,7 +67,7 @@ const renderer = new THREE.WebGLRenderer({
     antialias: true,
   });
 renderer.setPixelRatio(window.devicePixelRatio);
-renderer.setSize( window.innerWidth - 80, canvasHeight );
+renderer.setSize( window.innerWidth , window.innerHeight );
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.CineionToneMapping;
@@ -100,6 +85,7 @@ loadingManager.onProgress = function(url, loaded, total){
 const progressBarContainer = document.querySelector('.progress-bar-container');
 loadingManager.onLoad = function(){
    progressBarContainer.style.display = 'none';
+   CONTROLS_.centerCamera(10);
  }
 
 function animate(){
@@ -111,18 +97,20 @@ function animate(){
         scene.traverse(nonBloomed);
 
         scene.traverse((object) => {
-            if (object.isMesh && object.name === 'star') {
-                //object.position.y -= Math.sin(object.position.x * 0.1) * 0.01;
-                object.position.y -= object.position.y * object.velocity;
-
-                object.position.x += Math.sin(object.position.y * 0.1) * 0.1;
+            if (object.isPoints && object.name === 'rain') {
+                object.velocity -= 0.1 * Math.random() * 1;
+                object.position.y += object.velocity;
                 if (object.position.y < 1) {
                     object.position.y = 100;
+                    object.velocity = 0;
                     object.position.x = Math.random() * 200 - 100;
                 }
             }
         });
+
+
   
+        //characterMotions();
         APP_.step_(t - previousRAF_);
         CONTROLS_.composer.render();
         scene.traverse(restoreMaterial);
@@ -134,55 +122,59 @@ function animate(){
 }
 
 function onWindowResize(){
-    CONTROLS_.camera.aspect = window.innerWidth / canvasHeight;
+    CONTROLS_.camera.aspect = window.innerWidth / window.innerHeight;
     CONTROLS_.camera.updateProjectionMatrix();
-    renderer.setSize(window.innerWidth - 80, canvasHeight);
-    CONTROLS_.composer.setSize(window.innerWidth - 80, canvasHeight);
-    CONTROLS_.finalComposer.setSize(window.innerWidth - 80, canvasHeight);
+    renderer.setSize(window.innerWidth , window.innerHeight);
+    CONTROLS_.composer.setSize(window.innerWidth , window.innerHeight);
+    CONTROLS_.finalComposer.setSize(window.innerWidth , window.innerHeight);
 
   }
 
 function setupControls(){
-    const mouse = new THREE.Vector2();
-    const intersectionPoint = new THREE.Vector3();
-    const planeNormal = new THREE.Vector3();
-    const plane = new THREE.Plane();
-    const raycaster = new THREE.Raycaster();
-    const tempPos = new THREE.Vector3();
+
+
+
+
+    // const mouse = new THREE.Vector2();
+    // const intersectionPoint = new THREE.Vector3();
+    // const planeNormal = new THREE.Vector3();
+    // const plane = new THREE.Plane();
+    // const raycaster = new THREE.Raycaster();
+    // const tempPos = new THREE.Vector3();
     
-    canvas.addEventListener('mousemove', function(e){
-        mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-        mouse.y = -(e.clientY / canvasHeight) * 2 + 1.5;
-        planeNormal.copy(CONTROLS_.camera.position).normalize();
-        plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
-        raycaster.setFromCamera(mouse, CONTROLS_.camera);
-        raycaster.ray.intersectPlane(plane, intersectionPoint);
-    });
-    canvas.addEventListener('click', function(e){
-        const sphereGeo = new THREE.SphereGeometry(.5, 32, 32);
-        const sphereMat = new THREE.MeshStandardMaterial({color: primaryColor, roughness: 0.5, metalness: 0});
+    // canvas.addEventListener('mousemove', function(e){
+    //     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+    //     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1.5;
+    //     planeNormal.copy(CONTROLS_.camera.position).normalize();
+    //     plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
+    //     raycaster.setFromCamera(mouse, CONTROLS_.camera);
+    //     raycaster.ray.intersectPlane(plane, intersectionPoint);
+    // });
+    // canvas.addEventListener('click', function(e){
+    //     const sphereGeo = new THREE.SphereGeometry(.5, 32, 32);
+    //     const sphereMat = new THREE.MeshStandardMaterial({color: primaryColor, roughness: 0.5, metalness: 0});
         
-        const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-        sphereMesh.castShadow = true;
-        sphereMesh.quaternion.set(0, 0, 0, 1);
+    //     const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
+    //     sphereMesh.castShadow = true;
+    //     sphereMesh.quaternion.set(0, 0, 0, 1);
     
-        scene.add(sphereMesh);
-        const shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
-        sphereMesh.position.set(CONTROLS_.camera.position.x, shotY + CONTROLS_.controls.target.y, CONTROLS_.camera.position.z);
+    //     scene.add(sphereMesh);
+    //     const shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
+    //     sphereMesh.position.set(CONTROLS_.camera.position.x, shotY + CONTROLS_.controls.target.y, CONTROLS_.camera.position.z);
     
-        const sphereBody = new RigidBody();
-        sphereBody.createSphere(5, sphereMesh.position, 1);
-        sphereBody.setRestitution(0.99);
-        sphereBody.setFriction(0.5);
-        sphereBody.setRollingFriction(0.5);
-        APP_.physicsWorld_.addRigidBody(sphereBody.body_);
-        APP_.rigidBodies_.push({ mesh: sphereMesh, rigidBody: sphereBody });
+    //     const sphereBody = new RigidBody();
+    //     sphereBody.createSphere(5, sphereMesh.position, 1);
+    //     sphereBody.setRestitution(0.99);
+    //     sphereBody.setFriction(0.5);
+    //     sphereBody.setRollingFriction(0.5);
+    //     APP_.physicsWorld_.addRigidBody(sphereBody.body_);
+    //     APP_.rigidBodies_.push({ mesh: sphereMesh, rigidBody: sphereBody });
     
-        tempPos.copy(raycaster.ray.direction);
-        tempPos.multiplyScalar(50);
-        console.log('Sphere body', sphereBody.body_);
-        sphereBody.body_.setLinearVelocity(new Ammo.btVector3(tempPos.x, tempPos.y, tempPos.z));    
-    });
+    //     tempPos.copy(raycaster.ray.direction);
+    //     tempPos.multiplyScalar(50);
+    //     console.log('Sphere body', sphereBody.body_);
+    //     sphereBody.body_.setLinearVelocity(new Ammo.btVector3(tempPos.x, tempPos.y, tempPos.z));    
+    // });
 }
 
 
@@ -193,22 +185,9 @@ window.addEventListener('DOMContentLoaded', async() => {
         APP_ = new MyWorld();
         CONTROLS_ = new Controls();
         APP_.initialize();
-        setTimeout(() => {
-            CONTROLS_.centerCamera(10);
-        }, 1000);
     });
     const respawn = document.getElementById('respawn');
     respawn.addEventListener('click', function(){
-            console.log('Respawn');
-            
-            APP_.rigidBodies_.forEach((rb) => {
-                scene.remove(rb.mesh);
-                APP_.physicsWorld_.removeRigidBody(rb.rigidBody.body_);
-            });
-            APP_.rigidBodies_ = [];
-            APP_.count_ = 0;
-            APP_.countdown_ = 1.0;
-            APP_.initialize();
             CONTROLS_.centerCamera(10);
         });
     setupControls();   
@@ -316,8 +295,7 @@ class MyWorld{
             this.dispatcher_, this.broadphase_, this.solver_, this.collisionConfiguration_);
         this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));
 
-
-                // buildings
+        // SET ENVIRONMENT
 
         // const coffeeShop = new GLTFLoader(loadingManager); coffeeShop.load('../assets/scenes/cyberpunk_isometric_coffee_shop_cycles/scene.gltf', function( gltf ) {
         //     gltf.scene.position.x = -40;
@@ -360,8 +338,8 @@ class MyWorld{
             gltf.scene.name = "coffeeShop";
             gltf.scene.traverse( function( node ) {
           
-              //  node.castShadow = true; 
-              //  node.receiveShadow = true;
+               node.castShadow = true; 
+               node.receiveShadow = true;
           
           } );
           scene.add( gltf.scene);
@@ -370,35 +348,10 @@ class MyWorld{
 
         /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(400, 1, 200);
-        const groundMaterial = new THREE.MeshStandardMaterial( {color: 'black', roughness: 0, metalness: 0 } );
+        const groundMaterial = new THREE.MeshStandardMaterial( {color: 'black', roughness: 1, metalness: .2} );
         const plane = new THREE.Mesh( groundGeometry, groundMaterial );
         plane.receiveShadow = true;
         scene.add( plane );
-
-        // const backWallGeometry = new THREE.BoxGeometry(400, 200, 1);
-        // const backWallMaterial = new THREE.MeshStandardMaterial( {color: '#dfe2e6', roughness: 1, metalness: 0 } );
-        // const backWall = new THREE.Mesh( backWallGeometry, backWallMaterial );
-        // backWall.position.z = -100;
-        // backWall.position.y = 50;
-        // backWall.receiveShadow = false;
-        // scene.add( backWall );
-
-        // const leftWallGeometry = new THREE.BoxGeometry(1, 200, 400);
-        // const leftWallMaterial = new THREE.MeshStandardMaterial( {color: '#dfe2e6', roughness: 1, metalness: 0 } );
-        // const leftWall = new THREE.Mesh( leftWallGeometry, leftWallMaterial );
-        // leftWall.position.x = -200;
-        // leftWall.position.y = 50;
-        // leftWall.receiveShadow = false;
-        // scene.add( leftWall );
-
-        // const rightWallGeometry = new THREE.BoxGeometry(1, 200, 400);
-        // const rightWallMaterial = new THREE.MeshStandardMaterial( {color: '#dfe2e6', roughness: 1, metalness: 0 } );
-        // const rightWall = new THREE.Mesh( rightWallGeometry, rightWallMaterial );
-        // rightWall.position.x = 200;
-        // rightWall.position.y = 50;
-        // rightWall.receiveShadow = false;
-        // scene.add( rightWall );
-        
 
         const rbGround = new RigidBody();
         rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(200, 1, 100));
@@ -406,88 +359,26 @@ class MyWorld{
         this.physicsWorld_.addRigidBody(rbGround.body_);
         this.rigidBodies_ = [];
 
-        function addStar() {
-            const geometry = new THREE.SphereGeometry(.05, .1, .1);
-            // const material = new THREE.PointsMaterial( { color: 'white', roughness: 0, metalness: 1, emissive: '#454545', flatShading: true})
-            const material = new THREE.PointsMaterial( { color: 0Xaaaaaa, size: 0.1, transparent: true})
-            const star = new THREE.Mesh( geometry, material );
+        function addRain() {
+            const geometry = new THREE.SphereGeometry(.05, 10, 10);
+            const material = new THREE.PointsMaterial( { color: 0xaaaaaa, size: 0.1, transparent: true})
+            const rainDrop = new THREE.Points( geometry, material );
           
             const [x, z] = Array(2).fill().map(() => THREE.MathUtils.randFloatSpread( 100 ) );
             const y = THREE.MathUtils.randFloat( 0, 200 ) ;
-            console.log('Star', x, y, z);
-            star.position.set(
+            rainDrop.position.set(
                 Math.random() * 200 - 100,
                 Math.random() * 400 - 200,
                 Math.random() * 200 - 100
              );
-            star.velocity = (Math.random() * 0.1) + .01;
-            star.name = 'star';
-            scene.add(star)
+             rainDrop.velocity = {};
+             rainDrop.velocity = 0;
+             rainDrop.name = 'rain';
+            scene.add(rainDrop)
           
           }
           
-          Array(1000).fill().forEach(addStar);
-
-
-        // SET ENVIRONMENT TEXT
-        // const stack = [
-        //     {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
-        //     {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
-        //     {"tech": ["TypeScript", "JavaScript", "HTML", "CSS", "SASS", "C#"]},
-        // ];
-        // let height = 2;
-        // let startXPos = -25;
-        // let longestTech = 0;
-        // for (let x = 0; x < stack.length; x++){
-        //     startXPos = startXPos + (longestTech * height);
-        //     longestTech = 0;
-        //     for (let i = 0; i < stack[x].tech.length; i++){
-        //         const techYPos = i * height + 1;
-
-        //         const tech = stack[x].tech[i];
-        //         const techXPos = startXPos;
-
-        //         if (tech.length > longestTech){
-        //             longestTech = tech.length;
-        //             console.log('Longest tech', longestTech);
-        //         }
-        //         const loader = new FontLoader(loadingManager);
-        //         const font = loader.load('../assets/fonts/Tilt Neon_Regular.json');
-        //         loader.load('../assets/fonts/Tilt Neon_Regular.json', function(font){
-        //             const textGeometry = new TextGeometry(tech, {
-        //                 font: font,
-        //                 size: height,
-        //                 depth: .3,
-        //                 curveSegments: .01,
-        //                 bevelEnabled: true,
-        //                 bevelThickness: .0022,
-        //                 bevelSize: .001,
-        //                 bevelOffset: 0,
-        //                 bevelSegments: 1,
-        //             });
-        //             const textMaterial = new THREE.MeshStandardMaterial({color: secondaryColor, roughness: 1, metalness: 0.05});
-        //             const text = new THREE.Mesh(textGeometry, textMaterial);
-        //             text.castShadow = true;
-        //             text.receiveShadow = true;
-        //             text.position.set(techXPos, techYPos, 0);
-        //             text.quaternion.set(0, 0, 0, 1);
-        //             text.name = 'text';
-
-        //             scene.add(text);
-    
-        //             const rbText = new RigidBody();
-        //             rbText.createText(35, new THREE.Vector3(text.position.x, text.position.y, text.position.z), text.quaternion, new THREE.Vector3(height * tech.length, 2, 1.5));
-        //             rbText.setRestitution(0);
-        //             rbText.setFriction(.5);
-        //             rbText.setRollingFriction(0);
-        //             APP_.physicsWorld_.addRigidBody(rbText.body_);
-        //             APP_.rigidBodies_.push({ mesh: text, rigidBody: rbText });
-        //             //createRigidbodyOutlineHelper(scene, rbText.body_, 0x86DFDF);
-
-        //         });
-        //     }
-        // }
-
+        Array(500).fill().forEach(addRain);
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
             {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
@@ -535,11 +426,6 @@ class MyWorld{
                 });
             }
         }
-
-        // const logoSize = 10;
-        // const logoPositionX = -50;
-        // const logoPositionZ = -30;
-        // const logoPositionY = 25;
         const logoSize = 7;
         const logoPositionX = 50;
         const logoPositionZ = -10;
@@ -673,13 +559,13 @@ class MyWorld{
 }
 
 class Controls{
-    camera = new THREE.PerspectiveCamera( 80, window.innerWidth  / canvasHeight, 1, 1000 );
+    camera = new THREE.PerspectiveCamera( 80, window.innerWidth  / window.innerHeight, 1, 1000 );
     controls = null;
 
     renderScene = new RenderPass(scene, this.camera);
     composer = new EffectComposer(renderer);
     bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth - 80, canvasHeight), 
+        new THREE.Vector2(window.innerWidth , window.innerHeight), 
         1.2, 
         0.005, 
         0.05
@@ -700,14 +586,14 @@ class Controls{
     outputPass = new OutputPass();
 
     constructor(){        
-        this.composer.setSize(window.innerWidth - 80, canvasHeight);
+        this.composer.setSize(window.innerWidth , window.innerHeight);
         this.composer.addPass(this.renderScene);
         this.composer.addPass(this.bloomPass);
         this.composer.renderToScreen = false;
 
         //this.composer.addPass(this.outputPass);
 
-        this.finalComposer.setSize(window.innerWidth - 80, canvasHeight);
+        this.finalComposer.setSize(window.innerWidth , window.innerHeight);
         this.finalComposer.addPass(this.renderScene);
         this.finalComposer.addPass(this.mixPass);
         this.finalComposer.addPass(this.outputPass);
@@ -716,7 +602,7 @@ class Controls{
         this.camera.position.copy(CAM_START_POS);
         
         const light = new THREE.DirectionalLight(0xffffff, 1, 100);
-        light.position.set( -50, 50, 50 );
+        light.position.set( -10, 200, 50 );
         light.castShadow = true;
         light.shadow.mapSize.width = 512; // default
         light.shadow.mapSize.height = 512; // default
@@ -745,6 +631,12 @@ class Controls{
         this.controls.minPolarAngle = 1;
         this.controls.maxPolarAngle = Math.PI / 2;
         this.controls.target = TARGET_START_POS;
+        // SET USER CONTROLS
+        // this.controls = new PointerLockControls(this.camera, renderer.domElement);
+        // this.controls.lock();
+        // scene.add(this.controls.getObject());
+
+        // raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
 
         this.controls.update();
     }
@@ -835,4 +727,148 @@ function createRigidbodyOutlineHelper(scene, rigidBody, color = 0xff0000) {
     mesh.quaternion.set(quaternion.x(), quaternion.y(), quaternion.z(), quaternion.w());
 
     return mesh;
+}
+
+
+// user controls
+
+var ArrowUpVar = 0.5;
+var ArrowDownVar =  -0.5;
+document.onkeydown = checkKeyDown;
+document.onkeyup = checkKeyUp;
+
+var moveup = false;
+var moveleft = false;
+var movedown = false;
+var moveright = false;
+var moveforward = false;
+var moveback = false
+
+document.addEventListener("keyup", function(){ArrowUpVar = 0.05; ArrowDownVar = -0.05});
+function checkKeyUp(e) {
+
+    switch(e.keyCode){
+        case 38:
+            moveup = false;
+            ArrowUpVar = ArrowUpVar + -0.1;
+            break;
+        case 40:
+            movedown = false;
+            ArrowDownVar = ArrowDownVar + 0.1;
+            break;
+        case 37:
+            moveleft = false;
+            ArrowUpVar = ArrowUpVar + -0.1;
+            break;
+        case 39:
+            moveright = false;
+            ArrowDownVar = ArrowDownVar + 0.1;
+            break;
+        case 87:
+            moveup = false;
+            ArrowUpVar = ArrowUpVar + -0.1;
+            break;
+        case 83:
+            movedown = false;
+            ArrowDownVar = ArrowDownVar + 0.1;
+            break;
+        case 65:
+            moveleft = false;
+            ArrowUpVar = ArrowUpVar + -0.1;
+            break;
+        case 68:
+            moveright = false;
+            ArrowDownVar = ArrowDownVar + 0.1;
+            break;
+        case 32:
+            moveforward = false;
+            break;
+        case 16:
+            moveback = false;
+            break;
+    }
+  }
+function checkKeyDown(e) {
+
+    switch(e.keyCode){
+        case 38:
+            moveup = true;
+            break;
+        case 40:
+            movedown = true;
+            break;
+        case 37:
+            moveleft = true;
+            break;
+        case 39:
+            moveright = true;
+            break;
+        case 87:
+            moveup = true;
+            break;
+        case 83:
+            movedown = true;
+            break;
+        case 65:
+            moveleft = true;
+            break;
+        case 68:
+            moveright = true;
+            break;
+        case 32:
+            moveforward = true;
+            break;
+        case 16:
+            moveback = true;
+            break;
+    }
+  }
+
+function characterMotions(){
+    if(moveup){
+        CONTROLS_.setScene(CONTROLS_.camera.position.x, 
+            CONTROLS_.camera.position.y, 
+            CONTROLS_.camera.position.z += ArrowUpVar, 
+            CONTROLS_.controls.target.x, 
+            CONTROLS_.controls.target.y, 
+            CONTROLS_.controls.target.z += ArrowUpVar, 0);
+        
+      }
+      if(moveright){
+        CONTROLS_.camera.rotation.y -= 0.1;
+        CONTROLS_.controls.rotation.x -= 0.1;
+        CONTROLS_.controls.update();
+        // CONTROLS_.setScene(CONTROLS_.camera.position.x, 
+        //     CONTROLS_.camera.position.y, 
+        //     CONTROLS_.camera.position.z += ArrowDownVar, 
+        //     CONTROLS_.controls.target.x, 
+        //     CONTROLS_.controls.target.y, 
+        //     CONTROLS_.controls.target.z += ArrowDownVar, 0);
+
+        // CONTROLS_.controls.target.x += ArrowDownVar;
+      }
+      if(movedown){
+        CONTROLS_.setScene(CONTROLS_.camera.position.x, 
+            CONTROLS_.camera.position.y, 
+            CONTROLS_.camera.position.z += ArrowDownVar, 
+            CONTROLS_.controls.target.x, 
+            CONTROLS_.controls.target.y, 
+            CONTROLS_.controls.target.z += ArrowDownVar, 0);
+        // CONTROLS_.camera.position.z += ArrowDownVar;
+        // CONTROLS_.controls.target.z += ArrowDownVar;
+      }
+      if(moveleft){
+        // CONTROLS_.camera.position.x += ArrowUpVar;
+        // CONTROLS_.controls.target.x += ArrowUpVar;
+        CONTROLS_.camera.rotation.y += 0.1;
+        CONTROLS_.controls.target.x += 0.1;
+        //CONTROLS_.controls.update();
+
+      }
+      if(moveforward){
+    
+      }
+      if(moveback){
+        
+      }
 }

@@ -117,7 +117,7 @@ template.innerHTML = `
                 </nav>
             </div>
             <div id="logoSmallBox">
-                <span>ET Tech</span>
+                <span>ET DEV</span>
             </div>
             <nav class="main-nav">
                 <ul id="nav-item-list">
