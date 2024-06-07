@@ -668,7 +668,7 @@ class Controls{
             duration: seconds,
             ease: "back.inOut(1)",
               onUpdate: function(){
-                controls.update();
+                //controls.update();
               }
           });
         gsap.to(this.controls.target, {
