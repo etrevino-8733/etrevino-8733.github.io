@@ -185,7 +185,7 @@ window.addEventListener('DOMContentLoaded', async() => {
         Ammo = lib;
         APP_ = new MyWorld();
         CONTROLS_ = new Controls();
-        //APP_.initialize();
+        APP_.initialize();
         animate();
     });
     const respawn = document.getElementById('respawn');
