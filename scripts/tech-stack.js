@@ -380,7 +380,7 @@ class MyWorld{
           
           }
           
-        Array(500).fill().forEach(addRain);
+        //Array(500).fill().forEach(addRain);
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
             {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
@@ -616,7 +616,7 @@ class Controls{
         light.shadow.camera.bottom = -50;
         const ambientLight = new THREE.AmbientLight(0xffffff);
         
-        scene.fog = new THREE.Fog( 0x000000, 50, 200 );
+        scene.fog = new THREE.Fog( 0x000000, 25, 200 );
 
         scene.add(light, ambientLight);
 
@@ -646,7 +646,7 @@ class Controls{
     async centerCamera(seconds){
         let ms = seconds * 1000;
         setTimeout(() => {
-            this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x, TARGET_START_POS.y - 15, TARGET_START_POS.z + 20, seconds * 0.4); 
+            this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x - 5, TARGET_START_POS.y - 10, TARGET_START_POS.z + 10, seconds * 0.4); 
         }, 0);
         setTimeout(() => {
             this.setScene(-10, 10, 5, -5, 10, -2, seconds * 0.2);
