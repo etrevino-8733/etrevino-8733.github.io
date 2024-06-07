@@ -76,6 +76,7 @@ renderer.outputEncoding = THREE.sRGBEncoding;
 
 
 const loadingManager = new THREE.LoadingManager();
+const hiResLoader = new THREE.LoadingManager();
 
 const progressBar = document.getElementById('progress-bar');
 loadingManager.onProgress = function(url, loaded, total){
@@ -87,6 +88,27 @@ loadingManager.onLoad = function(){
    progressBarContainer.style.display = 'none';
    
    CONTROLS_.centerCamera(10);
+
+   const storeHiRes = new GLTFLoader(hiResLoader); 
+   storeHiRes.load('../assets/scenes/247_cyberpunk_store.glb', function( gltf ) {
+    gltf.scene.position.x = 0;
+    gltf.scene.position.y = 2;
+    gltf.scene.position.z = -20;
+    gltf.scene.rotation.y = -1.87;
+    gltf.scene.scale.set(10, 10, 10);
+    gltf.scene.name = "coffeeShop";
+    gltf.scene.traverse( function( node ) {
+  
+       node.castShadow = true; 
+       node.receiveShadow = true;
+  
+  } );
+  scene.add( gltf.scene);
+  }, undefined, function ( error ) { console.error(error); });
+
+  hiResLoader.onLoad = function(){
+    scene.remove(scene.children.find((child) => child.name === 'coffeeShop_lores'));
+  }
  }
 
 function animate(){
@@ -337,7 +359,7 @@ class MyWorld{
             gltf.scene.position.z = -20;
             gltf.scene.rotation.y = -1.87;
             gltf.scene.scale.set(10, 10, 10);
-            gltf.scene.name = "coffeeShop";
+            gltf.scene.name = "coffeeShop_lores";
             gltf.scene.traverse( function( node ) {
           
                node.castShadow = true; 
@@ -644,9 +666,9 @@ class Controls{
     }
 
     async centerCamera(seconds){
-        let ms = seconds * 1000;
+        const ms = seconds * 1000;
         setTimeout(() => {
-            this.setScene(CAM_START_POS.x + 10, CAM_START_POS.y, CAM_START_POS.z + 20, TARGET_START_POS.x - 5, TARGET_START_POS.y - 10, TARGET_START_POS.z + 10, seconds * 0.4); 
+            this.setScene(CAM_START_POS.x + 5, CAM_START_POS.y, CAM_START_POS.z + 5, TARGET_START_POS.x - 5, TARGET_START_POS.y, TARGET_START_POS.z + 5, seconds * 0.4); 
         }, 0);
         setTimeout(() => {
             this.setScene(-10, 10, 5, -5, 10, -2, seconds * 0.2);
