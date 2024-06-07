@@ -24,8 +24,8 @@ const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
 // const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
 // const CAM_START_POS = new THREE.Vector3(-35, 20, -20);
 // const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
-const CAM_START_POS = new THREE.Vector3(55, 2, -20);
-const TARGET_START_POS = new THREE.Vector3(57, 35, -25);
+const CAM_START_POS = new THREE.Vector3(60, 2, -20);
+const TARGET_START_POS = new THREE.Vector3(60, 35, -22);
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new THREE.Layers();
@@ -668,7 +668,7 @@ class Controls{
     async centerCamera(seconds){
         const ms = seconds * 1000;
         setTimeout(() => {
-            this.setScene(CAM_START_POS.x + 5, CAM_START_POS.y, CAM_START_POS.z + 5, TARGET_START_POS.x - 5, TARGET_START_POS.y, TARGET_START_POS.z + 5, seconds * 0.4); 
+            this.setScene(CAM_START_POS.x, CAM_START_POS.y, CAM_START_POS.z + 40, 25, TARGET_START_POS.y, TARGET_START_POS.z, seconds * 0.4); 
         }, 0);
         setTimeout(() => {
             this.setScene(-10, 10, 5, -5, 10, -2, seconds * 0.2);
