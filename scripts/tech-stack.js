@@ -1,4 +1,4 @@
-import * as THREE from '../libraries/Three/three.module.js';
+import * as THREE from '../libraries/Three/three.module.min.js';
 import { OrbitControls } from '../libraries/Three/OrbitControls.js';
 
 import { FontLoader } from '../libraries/Three/FontLoader.js';
@@ -380,7 +380,7 @@ class MyWorld{
           
           }
           
-        //Array(500).fill().forEach(addRain);
+        Array(500).fill().forEach(addRain);
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
             {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
