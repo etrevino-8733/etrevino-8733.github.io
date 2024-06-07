@@ -331,7 +331,7 @@ class MyWorld{
         //   scene.add( gltf.scene);
         //   }, undefined, function ( error ) { console.error(error); });
 
-        const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store/scene.gltf', function( gltf ) {
+        const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store.glb', function( gltf ) {
             gltf.scene.position.x = 0;
             gltf.scene.position.y = 2;
             gltf.scene.position.z = -20;
