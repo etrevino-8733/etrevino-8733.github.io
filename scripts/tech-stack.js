@@ -82,10 +82,13 @@ const progressBarContainer = document.querySelector('.progress-bar-container');
 loadingManager.onLoad = function(){
 
     setTimeout(() => {
-        progressBarContainer.style.display = 'none';
-   
-        SCENECONTROLS_.centerCamera(0);
+        progressBarContainer.style.opacity = 0;
     }, 1000);
+    setTimeout(() => {
+        SCENECONTROLS_.centerCamera(10);
+        progressBarContainer.style.display = 'none';
+    }, 2000);
+
    const storeHiRes = new GLTFLoader(hiResLoader); 
    storeHiRes.load('../assets/scenes/247_cyberpunk_store.glb', function( gltf ) {
     gltf.scene.position.x = 0;
@@ -618,24 +621,25 @@ class SceneControls{
         }, (ms * .6) - 500);
         setTimeout(() => {
             flickerStack();
-            this.controls.enabled = false;
-            canvas.addEventListener('click', async function(e){
-                if (document.pointerLockElement === canvas) {
-                    SCENECONTROLS_.fpsCamera_.input_.controlsLock = false;
-                    SCENECONTROLS_.controls.enabled = true;
-                    await document.exitPointerLock();
-                } else {
-                    await canvas.requestPointerLock({
-                        unadjustedMovment: true,
-                    });
-                    if(SCENECONTROLS_.fpsCamera_ === undefined){    
-                        await SCENECONTROLS_.setFpsCamera();
-                    }
-                    SCENECONTROLS_.controls.enabled = false;
-                    SCENECONTROLS_.fpsCamera_.input_.controlsLock = true;
-            
-                }
-            });
+
+            // NOT READY YET
+            // this.controls.enabled = false;
+            // canvas.addEventListener('click', async function(e){
+            //     if (document.pointerLockElement === canvas) {
+            //         SCENECONTROLS_.fpsCamera_.input_.controlsLock = false;
+            //         SCENECONTROLS_.controls.enabled = true;
+            //         await document.exitPointerLock();
+            //     } else {
+            //         await canvas.requestPointerLock({
+            //             unadjustedMovment: true,
+            //         });
+            //         if(SCENECONTROLS_.fpsCamera_ === undefined){    
+            //             await SCENECONTROLS_.setFpsCamera();
+            //         }
+            //         SCENECONTROLS_.controls.enabled = false;
+            //         SCENECONTROLS_.fpsCamera_.input_.controlsLock = true;         
+            //     }
+            // });
         }, ms);
     }
 
