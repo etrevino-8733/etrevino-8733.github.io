@@ -12,18 +12,16 @@ import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examp
 import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/OutputPass.js';
 import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/ShaderPass.js';
-// import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
+import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
 
 
 let timeElapsed = 0;
 let APP_ = null;
-let CONTROLS_ = null;
+let SCENECONTROLS_ = null;
 let previousRAF_ = null;
+
 const DEFAULT_MASS = 10;
 const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
-// const CAM_START_POS = new THREE.Vector3(-30, 10, -20);
-// const CAM_START_POS = new THREE.Vector3(-35, 20, -20);
-// const TARGET_START_POS = new THREE.Vector3(-30, 45, -40);
 const CAM_START_POS = new THREE.Vector3(60, 2, -20);
 const TARGET_START_POS = new THREE.Vector3(60, 35, -22);
 
@@ -47,9 +45,6 @@ function restoreMaterial(obj){
     }
 }
 
-let raycaster;
-
-
 
 let topText = null;
 let textBottom = null;  
@@ -63,7 +58,7 @@ const tertiaryColor = '#10403B';
 const scene = new THREE.Scene();
 const canvas = document.querySelector('#tech-stack');
 const renderer = new THREE.WebGLRenderer({
-    canvas: document.querySelector('#tech-stack'),
+    canvas: canvas,
     antialias: true,
   });
 renderer.setPixelRatio(window.devicePixelRatio);
@@ -85,10 +80,12 @@ loadingManager.onProgress = function(url, loaded, total){
 
 const progressBarContainer = document.querySelector('.progress-bar-container');
 loadingManager.onLoad = function(){
-   progressBarContainer.style.display = 'none';
-   
-   CONTROLS_.centerCamera(10);
 
+    setTimeout(() => {
+        progressBarContainer.style.display = 'none';
+   
+        SCENECONTROLS_.centerCamera(0);
+    }, 1000);
    const storeHiRes = new GLTFLoader(hiResLoader); 
    storeHiRes.load('../assets/scenes/247_cyberpunk_store.glb', function( gltf ) {
     gltf.scene.position.x = 0;
@@ -131,74 +128,23 @@ function animate(){
             }
         });
 
-
-  
-        //characterMotions();
         APP_.step_(t - previousRAF_);
-        CONTROLS_.composer.render();
+        SCENECONTROLS_.composer.render();
         scene.traverse(restoreMaterial);
-        CONTROLS_.finalComposer.render();
-        //renderer.render(scene, CONTROLS_.camera);
+        SCENECONTROLS_.finalComposer.render();
         animate();
         previousRAF_ = t;
       });
 }
 
 function onWindowResize(){
-    CONTROLS_.camera.aspect = window.innerWidth / window.innerHeight;
-    CONTROLS_.camera.updateProjectionMatrix();
+    SCENECONTROLS_.camera.aspect = window.innerWidth / window.innerHeight;
+    SCENECONTROLS_.camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth , window.innerHeight);
-    CONTROLS_.composer.setSize(window.innerWidth , window.innerHeight);
-    CONTROLS_.finalComposer.setSize(window.innerWidth , window.innerHeight);
+    SCENECONTROLS_.composer.setSize(window.innerWidth , window.innerHeight);
+    SCENECONTROLS_.finalComposer.setSize(window.innerWidth , window.innerHeight);
 
   }
-
-function setupControls(){
-
-
-
-
-    // const mouse = new THREE.Vector2();
-    // const intersectionPoint = new THREE.Vector3();
-    // const planeNormal = new THREE.Vector3();
-    // const plane = new THREE.Plane();
-    // const raycaster = new THREE.Raycaster();
-    // const tempPos = new THREE.Vector3();
-    
-    // canvas.addEventListener('mousemove', function(e){
-    //     mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-    //     mouse.y = -(e.clientY / window.innerHeight) * 2 + 1.5;
-    //     planeNormal.copy(CONTROLS_.camera.position).normalize();
-    //     plane.setFromNormalAndCoplanarPoint(planeNormal, scene.position);
-    //     raycaster.setFromCamera(mouse, CONTROLS_.camera);
-    //     raycaster.ray.intersectPlane(plane, intersectionPoint);
-    // });
-    // canvas.addEventListener('click', function(e){
-    //     const sphereGeo = new THREE.SphereGeometry(.5, 32, 32);
-    //     const sphereMat = new THREE.MeshStandardMaterial({color: primaryColor, roughness: 0.5, metalness: 0});
-        
-    //     const sphereMesh = new THREE.Mesh(sphereGeo, sphereMat);
-    //     sphereMesh.castShadow = true;
-    //     sphereMesh.quaternion.set(0, 0, 0, 1);
-    
-    //     scene.add(sphereMesh);
-    //     const shotY = intersectionPoint.y < 0 ? 0 : intersectionPoint.y;
-    //     sphereMesh.position.set(CONTROLS_.camera.position.x, shotY + CONTROLS_.controls.target.y, CONTROLS_.camera.position.z);
-    
-    //     const sphereBody = new RigidBody();
-    //     sphereBody.createSphere(5, sphereMesh.position, 1);
-    //     sphereBody.setRestitution(0.99);
-    //     sphereBody.setFriction(0.5);
-    //     sphereBody.setRollingFriction(0.5);
-    //     APP_.physicsWorld_.addRigidBody(sphereBody.body_);
-    //     APP_.rigidBodies_.push({ mesh: sphereMesh, rigidBody: sphereBody });
-    
-    //     tempPos.copy(raycaster.ray.direction);
-    //     tempPos.multiplyScalar(50);
-    //     console.log('Sphere body', sphereBody.body_);
-    //     sphereBody.body_.setLinearVelocity(new Ammo.btVector3(tempPos.x, tempPos.y, tempPos.z));    
-    // });
-}
 
 
 window.addEventListener('resize', onWindowResize, false);
@@ -206,16 +152,31 @@ window.addEventListener('DOMContentLoaded', async() => {
     Ammo().then((lib) => {
         Ammo = lib;
         APP_ = new MyWorld();
-        CONTROLS_ = new Controls();
-        APP_.initialize();
+        SCENECONTROLS_ = new SceneControls();
+        //APP_.initialize();
         animate();
     });
     const respawn = document.getElementById('respawn');
     respawn.addEventListener('click', function(){
-            CONTROLS_.centerCamera(10);
+            SCENECONTROLS_.centerCamera(10);
         });
-    setupControls();   
 });
+// canvas.addEventListener('click', async function(e){
+//     if (document.pointerLockElement === canvas) {
+//         SCENECONTROLS_.fpsCamera_.input_.controlsLock = false;
+//         await document.exitPointerLock();
+//     } else {
+//         //canvas.setPointerCapture(e.pointerId)
+//         await canvas.requestPointerLock({
+//             unadjustedMovment: true,
+//         });
+//         if(SCENECONTROLS_.fpsCamera_ === undefined){    
+//             await SCENECONTROLS_.setFpsCamera();
+//         }
+//         SCENECONTROLS_.fpsCamera_.input_.controlsLock = true;
+
+//     }
+// });
 
 class RigidBody{
     constructor(){
@@ -309,8 +270,9 @@ class RigidBody{
 
 class MyWorld{
     constructor(){
+        this.initialize_();
     }
-    initialize(){
+    initialize_(){
         this.collisionConfiguration_ = new Ammo.btDefaultCollisionConfiguration();
         this.dispatcher_ = new Ammo.btCollisionDispatcher(this.collisionConfiguration_);
         this.broadphase_ = new Ammo.btDbvtBroadphase();
@@ -320,39 +282,6 @@ class MyWorld{
         this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));
 
         // SET ENVIRONMENT
-
-        // const coffeeShop = new GLTFLoader(loadingManager); coffeeShop.load('../assets/scenes/cyberpunk_isometric_coffee_shop_cycles/scene.gltf', function( gltf ) {
-        //     gltf.scene.position.x = -40;
-        //     gltf.scene.position.y = 0;
-        //     gltf.scene.position.z = -20;
-        //     gltf.scene.rotation.y = 1.57;
-        //     gltf.scene.scale.set(5, 5, 5);
-        //     gltf.scene.name = "coffeeShop";
-        //     gltf.scene.traverse( function( node ) {
-          
-        //       //  node.castShadow = true; 
-        //       //  node.receiveShadow = true;
-          
-        //   } );
-        //   scene.add( gltf.scene);
-        //   }, undefined, function ( error ) { console.error(error); });
-
-        //   const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store/scene.gltf', function( gltf ) {
-        //     gltf.scene.position.x = 40;
-        //     gltf.scene.position.y = 2;
-        //     gltf.scene.position.z = -20;
-        //     gltf.scene.rotation.y = -1.57;
-        //     gltf.scene.scale.set(5, 5, 5);
-        //     gltf.scene.name = "coffeeShop";
-        //     gltf.scene.traverse( function( node ) {
-          
-        //       //  node.castShadow = true; 
-        //       //  node.receiveShadow = true;
-          
-        //   } );
-        //   scene.add( gltf.scene);
-        //   }, undefined, function ( error ) { console.error(error); });
-
         const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store_lowres.glb', function( gltf ) {
             gltf.scene.position.x = 0;
             gltf.scene.position.y = 2;
@@ -369,6 +298,19 @@ class MyWorld{
           scene.add( gltf.scene);
           }, undefined, function ( error ) { console.error(error); });
         
+        const laptop = new GLTFLoader(loadingManager); laptop.load('../assets/scenes/laptop_desk.glb', function( gltf ) {
+            gltf.scene.position.x = 0;
+            gltf.scene.position.y = 14;
+            gltf.scene.position.z = -18;
+            gltf.scene.rotation.y = 1.5;
+            gltf.scene.scale.set(20, 20, 20);
+            gltf.scene.name = "laptop";
+            gltf.scene.traverse( function( node ) {
+                node.castShadow = true;
+                node.receiveShadow = true;
+            });
+            scene.add( gltf.scene);
+            }, undefined, function ( error ) { console.error(error); });
 
         /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(400, 1, 200);
@@ -553,6 +495,10 @@ class MyWorld{
           this.rigidBodies_[i].mesh.position.copy(pos3);
           this.rigidBodies_[i].mesh.quaternion.copy(quat3);
         }
+
+        if(SCENECONTROLS_.fpsCamera_ !== undefined){
+            SCENECONTROLS_.fpsCamera_.update(timeElapsedS);
+        }
     }
     spawn_() {
         const scale = Math.random() * .7 + .7;
@@ -582,34 +528,50 @@ class MyWorld{
       }
 }
 
-class Controls{
-    camera = new THREE.PerspectiveCamera( 80, window.innerWidth  / window.innerHeight, 1, 1000 );
-    controls = null;
+class SceneControls{
+    constructor(){
+        this.initialize_();
+    }
 
-    renderScene = new RenderPass(scene, this.camera);
-    composer = new EffectComposer(renderer);
-    bloomPass = new UnrealBloomPass(
-        new THREE.Vector2(window.innerWidth , window.innerHeight), 
-        1.2, 
-        0.005, 
-        0.05
-    );
-    mixPass = new ShaderPass(
-        new THREE.ShaderMaterial({
-            uniforms: {
-                baseTexture: { value: null },
-                bloomTexture: { value: this.composer.renderTarget2.texture }
-            },
-            vertexShader: document.getElementById('vertexshader').textContent,
-            fragmentShader: document.getElementById('fragmentshader').textContent,
-        }), 'baseTexture'
-    );
+    initialize_(){
+        this.camera = new THREE.PerspectiveCamera( 80, window.innerWidth  / window.innerHeight, 1, 1000 );
+        this.camera.position.copy(CAM_START_POS);
 
-    finalComposer = new EffectComposer(renderer);
+        this.controls = new OrbitControls(this.camera, renderer.domElement);
+        
+        this.controls.minDistance = 1;
+        this.controls.maxDistance = 1000;
+        this.controls.minPolarAngle = 1;
+        this.controls.maxPolarAngle = Math.PI / 2;
+        this.controls.target = TARGET_START_POS;
+        this.controls.update();
+        
+        this.renderScene = new RenderPass(scene, this.camera);
+        this.composer = new EffectComposer(renderer);
+        this.bloomPass = new UnrealBloomPass(
+            new THREE.Vector2(window.innerWidth , window.innerHeight), 
+            1.5, 
+            0.005, 
+            0.05
+        );
+        this.mixPass = new ShaderPass(
+            new THREE.ShaderMaterial({
+                uniforms: {
+                    baseTexture: { value: null },
+                    bloomTexture: { value: this.composer.renderTarget2.texture }
+                },
+                vertexShader: document.getElementById('vertexshader').textContent,
+                fragmentShader: document.getElementById('fragmentshader').textContent,
+            }), 'baseTexture'
+        );
+    
+        this.finalComposer = new EffectComposer(renderer);
+    
+        this.outputPass = new OutputPass();
+        
 
-    outputPass = new OutputPass();
 
-    constructor(){        
+        
         this.composer.setSize(window.innerWidth , window.innerHeight);
         this.composer.addPass(this.renderScene);
         this.composer.addPass(this.bloomPass);
@@ -623,7 +585,7 @@ class Controls{
         this.finalComposer.addPass(this.outputPass);
 
 
-        this.camera.position.copy(CAM_START_POS);
+        //this.camera.position.copy(CAM_START_POS);
         
         const light = new THREE.DirectionalLight(0xffffff, 1, 100);
         light.position.set( -10, 200, 50 );
@@ -641,28 +603,6 @@ class Controls{
         scene.fog = new THREE.Fog( 0x000000, 25, 200 );
 
         scene.add(light, ambientLight);
-
-        // const lightHelper = new THREE.PointLight( light, 5 );
-        // scene.add( lightHelper );
-
-        // const helper = new THREE.CameraHelper( light.shadow.camera );
-        // scene.add( helper );
-
-        this.controls = new OrbitControls(this.camera, renderer.domElement);
-        
-        this.controls.minDistance = 1;
-        this.controls.maxDistance = 1000;
-        this.controls.minPolarAngle = 1;
-        this.controls.maxPolarAngle = Math.PI / 2;
-        this.controls.target = TARGET_START_POS;
-        // SET USER CONTROLS
-        // this.controls = new PointerLockControls(this.camera, renderer.domElement);
-        // this.controls.lock();
-        // scene.add(this.controls.getObject());
-
-        // raycaster = new THREE.Raycaster( new THREE.Vector3(), new THREE.Vector3( 0, - 1, 0 ), 0, 10 );
-
-        this.controls.update();
     }
 
     async centerCamera(seconds){
@@ -674,10 +614,28 @@ class Controls{
             this.setScene(-10, 10, 5, -5, 10, -2, seconds * 0.2);
         }, (ms * .4) - 500);
         setTimeout(() => {
-            this.setScene(0, 20, window.innerWidth > 600 ? 30 : 45, 0, 20, 0, seconds * 0.4);
+            this.setScene(0, 18, window.innerWidth > 600 ? 30 : 75, 0, 18, 0, seconds * 0.4);
         }, (ms * .6) - 500);
         setTimeout(() => {
             flickerStack();
+            this.controls.enabled = false;
+            canvas.addEventListener('click', async function(e){
+                if (document.pointerLockElement === canvas) {
+                    SCENECONTROLS_.fpsCamera_.input_.controlsLock = false;
+                    SCENECONTROLS_.controls.enabled = true;
+                    await document.exitPointerLock();
+                } else {
+                    await canvas.requestPointerLock({
+                        unadjustedMovment: true,
+                    });
+                    if(SCENECONTROLS_.fpsCamera_ === undefined){    
+                        await SCENECONTROLS_.setFpsCamera();
+                    }
+                    SCENECONTROLS_.controls.enabled = false;
+                    SCENECONTROLS_.fpsCamera_.input_.controlsLock = true;
+            
+                }
+            });
         }, ms);
     }
 
@@ -707,6 +665,183 @@ class Controls{
                 resolve(true);
             }, seconds * 1000);
           });
+    }
+
+    setFpsCamera(){
+        this.fpsCamera_ = new FirstPersonCamera(this.camera);
+    }
+}
+
+class InputController{
+    constructor(){
+        this.initialize_();
+    }
+
+    initialize_(){
+        this.current_ = {
+            leftButton: false,
+            rightButton: false,
+            mouseX: 0,
+            mouseY: 0,
+        };
+        this.previous_ = null;
+        this.keys_ = {};
+        this.previousKeys_ = {};
+
+        this.controlsLock = false;
+
+        document.addEventListener('mousedown', (e) => this.onMouseDown_(e), false);
+        document.addEventListener('mouseup', (e) => this.onMouseUp_(e), false);
+        document.addEventListener('mousemove', (e) => this.onMouseMove_(e), false);
+        document.addEventListener('keydown', (e) => this.onKeyDown_(e), false);
+        document.addEventListener('keyup', (e) => this.onKeyUp_(e), false);
+    }
+
+    onMouseDown_(e){
+        switch(e.button){
+            case 0:
+                this.current_.leftButton = true;
+                break;
+            case 2:
+                this.current_.rightButton = true;
+                break;
+        }        
+    }
+
+    onMouseUp_(e){
+        switch(e.button){
+            case 0:
+                this.current_.leftButton = false;
+                break;
+            case 2:
+                this.current_.rightButton = false;
+                break;
+        }
+    }
+
+    onMouseMove_(e){
+        // this.current_.mouseX = e.pageX - window.innerWidth / 2;
+        // this.current_.mouseY = e.pageY - window.innerHeight / 2;
+        this.current_.mouseX = e.movementX + (this.previous_?.mouseX ?? 0);
+        this.current_.mouseY = e.movementY + (this.previous_?.mouseY ?? 0);
+
+        if(this.previous_ === null){
+            this.previous_ = {...this.current_};
+        }
+
+        this.current_.mouseXDelta = this.current_.mouseX - this.previous_.mouseX;
+        this.current_.mouseYDelta = this.current_.mouseY - this.previous_.mouseY;
+    }
+
+    onKeyDown_(e){
+        this.keys_[e.keyCode] = true;
+    }
+    onKeyUp_(e){
+        this.keys_[e.keyCode] = false;
+    }
+
+    key(keyCode) {
+        return !!this.keys_[keyCode];
+      }
+
+    update(_) {
+    if (this.previous_ !== null) {
+        this.current_.mouseXDelta = this.current_.mouseX - this.previous_.mouseX;
+        this.current_.mouseYDelta = this.current_.mouseY - this.previous_.mouseY;
+
+        this.previous_ = {...this.current_};
+    }
+    }
+}
+
+class FirstPersonCamera {
+    constructor(camera){
+        this.camera_ = camera;
+        this.input_ = new InputController();
+        this.rotation_ = new THREE.Quaternion();
+        //this.translation_ = new THREE.Vector3(0, 18, 0);
+        this.translation_ = new THREE.Vector3().copy(camera.position);
+        this.phi_ = 0;
+        this.phiSpeed_ = 4;
+        this.theta_ = 0;
+        this.thetaSpeed_ = 2.5;
+
+        this.headBobActive_ = false;
+        this.headBobTimer_ = 0;
+    }
+
+    update(timeElapsedS){
+        if(!this.input_.controlsLock){
+            return;
+        }
+        this.updateRotation_(timeElapsedS);
+        this.updateCamera_(timeElapsedS);
+        this.updateTranslation_(timeElapsedS);
+        this.updateHeadBob_(timeElapsedS);
+        this.input_.update(timeElapsedS)
+    }
+
+    updateCamera_(_){
+        this.camera_.quaternion.copy(this.rotation_);
+        this.camera_.position.copy(this.translation_);
+        this.camera_.position.y += Math.sin(this.headBobTimer_ * 10) * .5;
+    }
+
+    updateHeadBob_(timeElapsedS){
+        if (this.headBobActive_) {
+            const wavelength = Math.PI;
+            const nextStep = 1 + Math.floor(((this.headBobTimer_ + 0.000001) * 10) / wavelength);
+            const nextStepTime = nextStep * wavelength / 10;
+            this.headBobTimer_ = Math.min(this.headBobTimer_ + timeElapsedS, nextStepTime);
+      
+            if (this.headBobTimer_ == nextStepTime) {
+              this.headBobActive_ = false;
+            }
+          }
+    }
+
+    updateTranslation_(timeElapsedS){
+        const forwardVelocity = (this.input_.key(87) ? 1 : 0) + (this.input_.key(83) ? -1 : 0);
+        const strafeVelocity = (this.input_.key(65) ? 1 : 0) + (this.input_.key(68) ? -1 : 0);
+
+        const qx = new THREE.Quaternion();
+        qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi_);
+    
+        const forward = new THREE.Vector3(0, 0, -1);
+        forward.applyQuaternion(qx);
+        forward.multiplyScalar(forwardVelocity * timeElapsedS * 10);
+    
+        const left = new THREE.Vector3(-1, 0, 0);
+        left.applyQuaternion(qx);
+        left.multiplyScalar(strafeVelocity * timeElapsedS * 10);
+    
+        this.translation_.add(forward);
+        this.translation_.add(left);
+
+        if(forwardVelocity != 0 || strafeVelocity != 0){
+            this.headBobActive_ = true;
+        }
+    }
+
+    updateRotation_(timeElapsedS){
+        const xh = this.input_.current_.mouseXDelta / window.innerWidth;
+        const yh = this.input_.current_.mouseYDelta / window.innerHeight;
+        if(isNaN(xh) || isNaN(yh)){
+            return;
+        }
+        this.phi_ += -xh * this.phiSpeed_;
+        this.theta_ = clamp(this.theta_ + -yh * this.thetaSpeed_, -Math.PI / 3, Math.PI / 3);
+    
+        const qx = new THREE.Quaternion();
+        qx.setFromAxisAngle(new THREE.Vector3(0, 1, 0), this.phi_);
+        const qz = new THREE.Quaternion();
+        qz.setFromAxisAngle(new THREE.Vector3(1, 0, 0), this.theta_);
+    
+        const q = new THREE.Quaternion();
+        q.multiply(qx);
+        q.multiply(qz);
+    
+        this.rotation_.copy(q);
     }
 }
 
@@ -749,146 +884,4 @@ function createRigidbodyOutlineHelper(scene, rigidBody, color = 0xff0000) {
     return mesh;
 }
 
-
-// user controls
-
-var ArrowUpVar = 0.5;
-var ArrowDownVar =  -0.5;
-document.onkeydown = checkKeyDown;
-document.onkeyup = checkKeyUp;
-
-var moveup = false;
-var moveleft = false;
-var movedown = false;
-var moveright = false;
-var moveforward = false;
-var moveback = false
-
-document.addEventListener("keyup", function(){ArrowUpVar = 0.05; ArrowDownVar = -0.05});
-function checkKeyUp(e) {
-
-    switch(e.keyCode){
-        case 38:
-            moveup = false;
-            ArrowUpVar = ArrowUpVar + -0.1;
-            break;
-        case 40:
-            movedown = false;
-            ArrowDownVar = ArrowDownVar + 0.1;
-            break;
-        case 37:
-            moveleft = false;
-            ArrowUpVar = ArrowUpVar + -0.1;
-            break;
-        case 39:
-            moveright = false;
-            ArrowDownVar = ArrowDownVar + 0.1;
-            break;
-        case 87:
-            moveup = false;
-            ArrowUpVar = ArrowUpVar + -0.1;
-            break;
-        case 83:
-            movedown = false;
-            ArrowDownVar = ArrowDownVar + 0.1;
-            break;
-        case 65:
-            moveleft = false;
-            ArrowUpVar = ArrowUpVar + -0.1;
-            break;
-        case 68:
-            moveright = false;
-            ArrowDownVar = ArrowDownVar + 0.1;
-            break;
-        case 32:
-            moveforward = false;
-            break;
-        case 16:
-            moveback = false;
-            break;
-    }
-  }
-function checkKeyDown(e) {
-
-    switch(e.keyCode){
-        case 38:
-            moveup = true;
-            break;
-        case 40:
-            movedown = true;
-            break;
-        case 37:
-            moveleft = true;
-            break;
-        case 39:
-            moveright = true;
-            break;
-        case 87:
-            moveup = true;
-            break;
-        case 83:
-            movedown = true;
-            break;
-        case 65:
-            moveleft = true;
-            break;
-        case 68:
-            moveright = true;
-            break;
-        case 32:
-            moveforward = true;
-            break;
-        case 16:
-            moveback = true;
-            break;
-    }
-  }
-
-function characterMotions(){
-    if(moveup){
-        CONTROLS_.setScene(CONTROLS_.camera.position.x, 
-            CONTROLS_.camera.position.y, 
-            CONTROLS_.camera.position.z += ArrowUpVar, 
-            CONTROLS_.controls.target.x, 
-            CONTROLS_.controls.target.y, 
-            CONTROLS_.controls.target.z += ArrowUpVar, 0);
-        
-      }
-      if(moveright){
-        CONTROLS_.camera.rotation.y -= 0.1;
-        CONTROLS_.controls.rotation.x -= 0.1;
-        CONTROLS_.controls.update();
-        // CONTROLS_.setScene(CONTROLS_.camera.position.x, 
-        //     CONTROLS_.camera.position.y, 
-        //     CONTROLS_.camera.position.z += ArrowDownVar, 
-        //     CONTROLS_.controls.target.x, 
-        //     CONTROLS_.controls.target.y, 
-        //     CONTROLS_.controls.target.z += ArrowDownVar, 0);
-
-        // CONTROLS_.controls.target.x += ArrowDownVar;
-      }
-      if(movedown){
-        CONTROLS_.setScene(CONTROLS_.camera.position.x, 
-            CONTROLS_.camera.position.y, 
-            CONTROLS_.camera.position.z += ArrowDownVar, 
-            CONTROLS_.controls.target.x, 
-            CONTROLS_.controls.target.y, 
-            CONTROLS_.controls.target.z += ArrowDownVar, 0);
-        // CONTROLS_.camera.position.z += ArrowDownVar;
-        // CONTROLS_.controls.target.z += ArrowDownVar;
-      }
-      if(moveleft){
-        // CONTROLS_.camera.position.x += ArrowUpVar;
-        // CONTROLS_.controls.target.x += ArrowUpVar;
-        CONTROLS_.camera.rotation.y += 0.1;
-        CONTROLS_.controls.target.x += 0.1;
-        //CONTROLS_.controls.update();
-
-      }
-      if(moveforward){
-    
-      }
-      if(moveback){
-        
-      }
-}
+const clamp = (val, min, max) => Math.min(Math.max(val, min), max)
