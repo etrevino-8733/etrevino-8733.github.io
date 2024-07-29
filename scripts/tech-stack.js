@@ -86,6 +86,7 @@ loadingManager.onLoad = function(){
     }, 1000);
     setTimeout(() => {
         SCENECONTROLS_.centerCamera(10);
+        //SCENECONTROLS_.handHeldCameraEffect();
         progressBarContainer.style.display = 'none';
     }, 2000);
 
@@ -135,6 +136,7 @@ function animate(){
         SCENECONTROLS_.composer.render();
         scene.traverse(restoreMaterial);
         SCENECONTROLS_.finalComposer.render();
+        SCENECONTROLS_.handHeldCameraEffect();
         animate();
         previousRAF_ = t;
       });
@@ -163,6 +165,11 @@ window.addEventListener('DOMContentLoaded', async() => {
     respawn.addEventListener('click', function(){
             SCENECONTROLS_.centerCamera(10);
         });
+    const moreInfoBtn = document.getElementById('info-btn');
+    moreInfoBtn.addEventListener('click', function(){
+        SCENECONTROLS_.goToComputer();
+        
+    });
 });
 // canvas.addEventListener('click', async function(e){
 //     if (document.pointerLockElement === canvas) {
@@ -537,6 +544,12 @@ class SceneControls{
     }
 
     initialize_(){
+        this.handheldEffectLoop = 0;
+        this.handheldEffectIncreaseX = true;
+        this.handheldEffectIncreaseY = true;
+        this.handheldEffectXBoundary = 0.1;
+        this.handheldEffectYBoundary = 0.5;
+
         this.camera = new THREE.PerspectiveCamera( 80, window.innerWidth  / window.innerHeight, 1, 1000 );
         this.camera.position.copy(CAM_START_POS);
 
@@ -621,6 +634,7 @@ class SceneControls{
         }, (ms * .6) - 500);
         setTimeout(() => {
             flickerStack();
+            this.handHeldCameraEffect();
 
             // NOT READY YET
             // this.controls.enabled = false;
@@ -643,32 +657,93 @@ class SceneControls{
         }, ms);
     }
 
-    setScene(cx, cy, cz,tx ,ty ,tz, seconds){
+    setScene(cx, cy, cz,tx ,ty ,tz, seconds, easeOption = "back.inOut(1)"){
         let controls = this.controls;
+        gsap.to(this.controls.target, {
+            x: tx,
+            y: ty,
+            z: tz,
+            duration: seconds,
+            onUpdate: function(){
+                controls.update();
+              }
+        });
         gsap.to(this.camera.position, {
             x: cx,
             y: cy,
             z: cz,
             duration: seconds,
-            ease: "back.inOut(1)",
+            ease: easeOption,
               onUpdate: function(){
                 //controls.update();
               }
-          });
-        gsap.to(this.controls.target, {
-              x: tx,
-              y: ty,
-              z: tz,
-              duration: seconds,
-              onUpdate: function(){
-                  controls.update();
-                }
           });
         return new Promise((resolve) => {
             setTimeout(() => {
                 resolve(true);
             }, seconds * 1000);
           });
+    }
+
+    handHeldCameraEffect(){
+        if(this.handheldEffectLoop > 1){
+            this.handheldEffectIncrease = false;
+        } else if(this.handheldEffectLoop < -1){
+            this.handheldEffectIncrease = true;
+        }
+
+        if(this.handheldEffectIncrease){
+            this.handheldEffectLoop += 0.01;
+            this.handheldEffectIncrement = 0.000001;
+        }else{
+            this.handheldEffectLoop -= 0.01;
+            this.handheldEffectIncrement = -0.000001;
+        }
+        
+        // this.camera.position.x += Math.sin(this.handheldEffectIncrement * 10) * .5;
+        // this.camera.position.y += (Math.random() * 10) * this.handheldEffectIncrement;
+        // let x = Math.sin(this.handheldEffectLoop) * .01;
+        // let y = Math.sin(this.handheldEffectLoop) * .01;
+        // let z = Math.sin(this.handheldEffectLoop) * .01;
+
+        let x = Math.sin(this.handheldEffectLoop) * .001;
+        let y = Math.sin(this.handheldEffectLoop) * .001;
+        let z = Math.sin(this.handheldEffectLoop) * .001;
+
+        this.camera.position.x += ((Math.random(), 10) * x);
+        this.camera.position.y += ((Math.random(), 10) * y);
+        this.camera.position.z += ((Math.random(), 10) * z);
+
+        // this.camera.position.x += this.handheldEffectIncrement * .5;
+        // this.camera.position.y += this.handheldEffectIncrement * .5;
+    }
+
+    // async setScene2(cx, cy, cz,tx ,ty ,tz, duration){
+    //     const steps = duration * 1000;
+    //     let startCx = this.camera.position.x / steps;
+    //     let startCy = this.camera.position.y / steps;
+    //     let startCz = this.camera.position.z / steps;
+    //     let startTx = this.controls.target.x / steps;
+    //     let startTy = this.controls.target.y / steps;
+    //     let startTz = this.controls.target.z / steps;
+
+
+    //     for(let i = 1; i < steps * 1000; i++){
+    //         let cameraPos = new THREE.Vector3(startCx * i, startCy * i, startCz * i);
+    //         let targetPos = new THREE.Vector3(startTx * i, startTy * i, startTz * i);
+    //         console.log("setScene2", i, cameraPos);
+    //         this.camera.position.copy(cameraPos);
+    //     }
+    // }
+
+    async goToComputer(){
+        await this.setScene(0, 18, 5, 0, 18, 0, 2);
+        // await this.setScene2(0, 18, 5, -5, 18, 0, 2);
+        // await this.setScene2(-20, 18, -10, -25, 18, -15, 4);
+        // await this.setScene(-10, 18, -20, 10, 18, 10, 4, "circ.inOut");
+        // await this.setScene(0, 18, -5, -5, 18, 0, 2, "circ.inOut");
+        //await this.setScene(0, 18, -5, -5, 18, 0, 2);
+
     }
 
     setFpsCamera(){
