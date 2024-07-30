@@ -31,7 +31,7 @@
             <p>This is a feature from the software software I build for an oil company that specializes in scanning and inspecting pipes used in oil wells.  
                 My software helped the client manage and share detaild data of the pitting and rodware for each pipe they scaned at each location. 
                 The software also allowed my client to share the scan data with their customers. Each of their customers had an account on the web application where they could request scan jobs, view invoices through an integration with Quickbooks, and generate reports for each of their well locations.</p>
-            <a class="project-btn" href="./Three/three.html" target="_blank">View Feature</a>
+            <a class="project-btn" href="./Three/three.html">View Feature</a>
         </div>
     </section>
     <section>
@@ -75,7 +75,92 @@
             </div>
         </div>
     </section>
-    <script type="importmap">
+
+    <script type="text/javascript">
+
+
+        document.addEventListener('DOMContentLoaded', () => {
+            let stackItems = document.querySelectorAll('.stack-element');
+            let stackItemsCoor = new Object();
+            setItems(stackItems, stackItemsCoor);
+            let stackCards = document.querySelector('.stack-card');
+            let stackItemTop = stackCards.getBoundingClientRect().top;
+
+            function trickleStackEventListener(event, callback){
+                const wrapper = e => {
+                        callback(e, () => document.removeEventListener(event, wrapper));
+                    }
+                document.addEventListener(event, wrapper);
+            }
+
+            trickleStackEventListener('scroll', (e, closeListener) => {
+                let stackItemTop = stackItems[0].getBoundingClientRect().top;
+                let windowBottom = window.innerHeight;
+
+                console.log(stackItemTop);
+                if(windowBottom > stackItemTop){
+                    for(let key in stackItemsCoor){
+                        setTimeout(() => {
+                            moveItems(stackItemsCoor[key]);
+                        });
+                    }
+                    let stackContainer = document.querySelector('.stack-container');
+                    stackContainer.style.height = 'auto';
+                    closeListener();
+                }
+            });
+        });
+
+        function moveItems(item){
+            let transitionSeconds = Math.floor(Math.random() * (1 - 1.5) + 1.5);
+            item.element.style.transition = 'transform '+ transitionSeconds + 's';
+            item.element.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)';
+            // setTimeout(() => {
+            //     item.element.style.animation = 'pulse 2s ease-in-out infinite';
+            // }, transitionSeconds * 1000);
+            
+        }
+
+        async function setItems(stackItems, stackItemsCoor){
+            let bodyRect = document.body.getBoundingClientRect();
+            let stackContainer = document.querySelector('.stack-container');
+            stackContainer.style.height = stackContainer.getBoundingClientRect().height + 'px';
+
+            for(let i = 0; i < stackItems.length; i++){
+                let item = stackItems[i];
+                let xtrans = Math.floor(Math.random() * (-5000 - -window.innerWidth) +  -window.innerWidth);
+                // let xtrans = Math.floor(Math.random() * (-window.innerWidth - -1000) +  -1000);
+
+                stackItemsCoor[item.textContent] = {
+                    element: item,
+                }
+                stackItemsCoor[item.textContent].element.style.transition = 'transform 0s';
+                stackItemsCoor[item.textContent].element.style.transform = 'translate(' + xtrans + 'px, ' + 0 + 'px)';
+            }
+
+
+            console.log(stackItemsCoor);
+
+            // await setTimeout(() => {
+            //     for(let key in stackItemsCoor){
+            //         moveItems(stackItemsCoor[key]);
+            //     }
+                
+            // }, 1000);
+            // for(let key in stackItemsCoor){
+            //         setTimeout(() => {
+            //             moveItems(stackItemsCoor[key]);
+            //         }, 500);
+            //     }
+            // await setTimeout(() => {
+            //     for(let key in stackItemsCoor){
+            //         stackItemsCoor[key].element.style.position = 'static';
+            //     }
+            // });
+        }
+    </script>
+
+    <!-- <script type="importmap">
         {
           "imports": {
             "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
@@ -100,5 +185,5 @@
         }
     </script>
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
-    <script type="module" src="/scripts/tech-stack.js"></script>
+    <script type="module" src="/scripts/tech-stack.js"></script> -->
 </body>

@@ -50,6 +50,7 @@ template.innerHTML = `
                 cursor: pointer;
                 border-radius: 6px;
                 border: none;
+                flex: 1;
             
                 transition: all 0.3s ease-in-out;
                 text-decoration: none;

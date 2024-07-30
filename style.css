@@ -303,3 +303,32 @@ a:hover{
     margin-bottom: 20px;
     text-align: center;
   }
+
+  .stack-element{
+    /* -webkit-animation: pulse 1s linear infinite;
+	animation: pulse 1s linear infinite; */
+  }
+
+  @-webkit-keyframes pulse {
+    0% {
+    -webkit-transform: scale(1, 1);
+   }
+    50% {
+    -webkit-transform: scale(1.1, 1.1);
+   }
+    100% {
+    -webkit-transform: scale(1, 1);
+   };
+   }
+   
+   @keyframes pulse {
+    0% {
+    transform: scale(1, 1);
+   }
+    50% {
+    transform: scale(1.1, 1.1);
+   }
+    100% {
+   transform: scale(1, 1);
+   };
+   }
