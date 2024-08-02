@@ -11,13 +11,16 @@
     <script defer type="text/javascript" src="libraries/TopNav/TopNav.js"></script>
 </head>
 <body>
+    <div class="home-bg">
+
+    </div>
     <header class="header">
         <et-top-nav nav-items='[{"name": "Home", "link": "index.html"}, {"name": "About Me", "link": "about-me.html"},{"name": "Projects", "link": "#projects"}]'>
         </et-top-nav>
     </header>
     <section class="info-section left">
         <h1>About Me</h1>
-        <div class="card">
+        <div class="card glow-on-hover">
             <p>Hi, my name is Emmanuel Trevino.
                 I am a software devoloper who specializes in the development of software solutions for big data companies.  In my experience, I have worked on a variety of projects that have allowed me to develop my skills in programming, data analysis, and machine learning.
                 I have a passion for technology and I am always looking for new ways to improve my skills. I am currently working on a project that involves the development of a software solution for the oil and gas industry. 
@@ -26,7 +29,7 @@
         </div>
     </section>
     <section id="projects" class="info-section right">
-        <div class="card">
+        <div class="card glow-on-hover">
             <p>This is a feature from the software software I build for an oil company that specializes in scanning and inspecting pipes used in oil wells.  
                 My software helped the client manage and share detaild data of the pitting and rodware for each pipe they scaned at each location. 
                 The software also allowed my client to share the scan data with their customers. Each of their customers had an account on the web application where they could request scan jobs, view invoices through an integration with Quickbooks, and generate reports for each of their well locations.</p>
@@ -37,7 +40,7 @@
     <section class="info-section left">
         <h1>Tech Stack</h1>
         <div class="stack-container">
-            <div class="stack-card">
+            <div class="stack-card glow-on-hover">
                 <h2>Frontend</h2>
                 <ul>
                     <li class="stack-element">HTML</li>
@@ -52,7 +55,7 @@
                     <li class="stack-element">NX</li>
                 </ul>
             </div>
-            <div class="stack-card">
+            <div class="stack-card glow-on-hover">
                 <h2>Backend</h2>
                 <ul>
                     <li class="stack-element">C#</li>
@@ -66,7 +69,7 @@
                     <li class="stack-element">Azure</li>
                 </ul>
             </div>
-            <div class="stack-card">
+            <div class="stack-card glow-on-hover">
                 <h2>Database</h2>
                 <ul>
                     <li class="stack-element">SQL</li>
@@ -105,8 +108,6 @@
                     if(windowBottom > sectionTop){
                         var randomColor = Math.floor(Math.random()*16777215).toString(16);
                         infoSection[i].querySelector('h1').style.opacity = opacity;
-                        console.log(infoSection[i].querySelector('h1').textContent + ' is in view');
-                        console.log('section ' + i + ' is in view');
                     }
                 });
             }
@@ -116,7 +117,6 @@
                 let stackItemTop = stackItems[0].getBoundingClientRect().top;
                 let windowBottom = window.innerHeight;
 
-                console.log(stackItemTop);
                 if(windowBottom > stackItemTop){
                     for(let key in stackItemsCoor){
                         setTimeout(() => {
@@ -125,7 +125,11 @@
                     }
                     let stackContainer = document.querySelector('.stack-container');
                     stackContainer.style.height = 'auto';
-                    closeListener();
+                    //closeListener();
+                }
+
+                if(windowBottom < stackItemTop){
+                    setItems(stackItems, stackItemsCoor);
                 }
             });
         });
@@ -133,6 +137,7 @@
         function moveItems(item){
             let transitionSeconds = Math.floor(Math.random() * (1 - 1.5) + 1.5);
             item.element.style.transition = 'transform '+ transitionSeconds + 's';
+            item.element.style.transitionTimingFunction = 'ease-out';
             item.element.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)';
             // setTimeout(() => {
             //     item.element.style.animation = 'pulse 2s ease-in-out infinite';
