@@ -15,6 +15,8 @@ import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/
 import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
 
 
+let IsAboutMePage = false;
+
 let timeElapsed = 0;
 let APP_ = null;
 let SCENECONTROLS_ = null;
@@ -22,8 +24,8 @@ let previousRAF_ = null;
 
 const DEFAULT_MASS = 10;
 const DEFALUT_CAM_POS = new THREE.Vector3(0, 2, 0);
-const CAM_START_POS = new THREE.Vector3(60, 2, -20);
-const TARGET_START_POS = new THREE.Vector3(60, 35, -22);
+let CAM_START_POS = new THREE.Vector3(60, 2, -20);
+let TARGET_START_POS = new THREE.Vector3(60, 35, -22);
 
 const BLOOM_SCENE = 1;
 const bloomLayer = new THREE.Layers();
@@ -74,21 +76,29 @@ const loadingManager = new THREE.LoadingManager();
 const hiResLoader = new THREE.LoadingManager();
 
 const progressBar = document.getElementById('progress-bar');
-loadingManager.onProgress = function(url, loaded, total){
-  progressBar.value = (loaded / total) * 100;
+if(progressBar !== null){
+    loadingManager.onProgress = function(url, loaded, total){
+        progressBar.value = (loaded / total) * 100;
+      }
 }
+
 
 const progressBarContainer = document.querySelector('.progress-bar-container');
 loadingManager.onLoad = function(){
 
-    setTimeout(() => {
-        progressBarContainer.style.opacity = 0;
-    }, 1000);
-    setTimeout(() => {
-        SCENECONTROLS_.centerCamera(10);
-        //SCENECONTROLS_.handHeldCameraEffect();
-        progressBarContainer.style.display = 'none';
-    }, 2000);
+    if(progressBarContainer !== null){
+        setTimeout(() => {
+            progressBarContainer.style.opacity = 0;
+        }, 1000);
+        setTimeout(() => {
+            SCENECONTROLS_.centerCamera(10);
+            //SCENECONTROLS_.handHeldCameraEffect();
+            progressBarContainer.style.display = 'none';
+        }, 2000);
+    } else{
+        flickerStack();
+    }
+
 
    const storeHiRes = new GLTFLoader(hiResLoader); 
    storeHiRes.load('../assets/scenes/247_cyberpunk_store.glb', function( gltf ) {
@@ -154,6 +164,7 @@ function onWindowResize(){
 
 window.addEventListener('resize', onWindowResize, false);
 window.addEventListener('DOMContentLoaded', async() => {
+    const aboutMePage = document.querySelector('.home-bg');
     Ammo().then((lib) => {
         Ammo = lib;
         APP_ = new MyWorld();
@@ -161,15 +172,43 @@ window.addEventListener('DOMContentLoaded', async() => {
         //APP_.initialize();
         animate();
     });
-    const respawn = document.getElementById('respawn');
-    respawn.addEventListener('click', function(){
-            SCENECONTROLS_.centerCamera(10);
-        });
-    const moreInfoBtn = document.getElementById('info-btn');
-    moreInfoBtn.addEventListener('click', function(){
-        SCENECONTROLS_.goToComputer();
-        
+    if(aboutMePage !== null){
+        IsAboutMePage = true;
+        CAM_START_POS = new THREE.Vector3(0, 0, 80);
+        TARGET_START_POS = new THREE.Vector3(0, 20, 0);  
+
+        const offset = new THREE.Vector3();
+        const distance = 20;
+
+        document.addEventListener('scroll', function(){
+            // SCENECONTROLS_.camera.position.x++;
+            // //SCENECONTROLS_.camera.position.y = window.scrollY * 0.1;
+            // SCENECONTROLS_.camera.position.z++;
+
+            offset.x = distance * Math.sin( window.scrollY * 0.001 );
+            offset.z = distance * Math.cos( window.scrollY * 0.001 );
+            offset.y = 20;
+          
+            SCENECONTROLS_.camera.position.copy( CAM_START_POS).add( offset );
+            SCENECONTROLS_.camera.lookAt( TARGET_START_POS );
     });
+    }else{        
+        const respawn = document.getElementById('respawn');
+        respawn.addEventListener('click', function(){
+                SCENECONTROLS_.centerCamera(10);
+            });
+        const moreInfoBtn = document.getElementById('info-btn');
+        moreInfoBtn.addEventListener('click', function(){
+            SCENECONTROLS_.goToComputer();
+            
+        });
+    }
+
+
+
+
+
+
 });
 // canvas.addEventListener('click', async function(e){
 //     if (document.pointerLockElement === canvas) {
@@ -554,6 +593,10 @@ class SceneControls{
         this.camera.position.copy(CAM_START_POS);
 
         this.controls = new OrbitControls(this.camera, renderer.domElement);
+        if(IsAboutMePage){
+            this.controls.enabled = false;
+        }
+
         
         this.controls.minDistance = 1;
         this.controls.maxDistance = 1000;
