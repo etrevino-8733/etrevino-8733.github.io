@@ -583,6 +583,7 @@ class SceneControls{
     }
 
     initialize_(){
+        this.handheldEffectActive = true;
         this.handheldEffectLoop = 0;
         this.handheldEffectIncreaseX = true;
         this.handheldEffectIncreaseY = true;
@@ -665,6 +666,7 @@ class SceneControls{
     }
 
     async centerCamera(seconds){
+        this.handheldEffectActive = false;
         const ms = seconds * 1000;
         setTimeout(() => {
             this.setScene(CAM_START_POS.x, CAM_START_POS.y, CAM_START_POS.z + 40, 25, TARGET_START_POS.y, TARGET_START_POS.z, seconds * 0.4); 
@@ -677,7 +679,7 @@ class SceneControls{
         }, (ms * .6) - 500);
         setTimeout(() => {
             flickerStack();
-            this.handHeldCameraEffect();
+            this.handheldEffectActive = true;
 
             // NOT READY YET
             // this.controls.enabled = false;
@@ -729,6 +731,7 @@ class SceneControls{
     }
 
     handHeldCameraEffect(){
+        if(this.handheldEffectActive === false) return;
         if(this.handheldEffectLoop > 1){
             this.handheldEffectIncrease = false;
         } else if(this.handheldEffectLoop < -1){

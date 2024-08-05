@@ -18,6 +18,11 @@
         <et-top-nav nav-items='[{"name": "Home", "link": "index.html"}, {"name": "About Me", "link": "about-me.html"},{"name": "Projects", "link": "#projects"}]'>
         </et-top-nav>
     </header>
+    <span class="scroll-icon">
+        <span class="scroll-icon__wheel-outer">
+          <span class="scroll-icon__wheel-inner"></span>
+        </span>
+    </span>
     <section class="info-section" style="height: 100vh;">
     </section>
     <section class="info-section left">
@@ -90,6 +95,7 @@
             setItems(stackItems, stackItemsCoor);
             let stackCards = document.querySelector('.stack-card');
             let stackItemTop = stackCards.getBoundingClientRect().top;
+            document.querySelector('.scroll-icon').style.opacity = '1';
 
             function trickleStackEventListener(event, callback){
                 const wrapper = e => {
@@ -117,6 +123,11 @@
             trickleStackEventListener('scroll', (e, closeListener) => {
                 let stackItemTop = stackItems[0].getBoundingClientRect().top;
                 let windowBottom = window.innerHeight;
+
+                if(window.scrollY > 20) {
+                    let scrollIcon = document.querySelector('.scroll-icon');
+                    scrollIcon.style.opacity = '0';
+                };
 
                 if(windowBottom > stackItemTop){
                     for(let key in stackItemsCoor){
