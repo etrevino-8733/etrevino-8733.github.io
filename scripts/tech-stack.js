@@ -7,6 +7,7 @@ import gsap from "../libraries/Three/gsap-core.js";
 
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+import {FBXLoader} from 'three/addons/loaders/FBXLoader.js';
 
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
@@ -14,6 +15,8 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
+
+import {BasicCharacterController} from '../scripts/characters.js';
 
 
 let IsAboutMePage = false;
@@ -195,6 +198,16 @@ window.addEventListener('DOMContentLoaded', async() => {
             SCENECONTROLS_.camera.lookAt( TARGET_START_POS );
     });
     }
+
+    let updateAssetBtn = document.querySelector('.release-the-moster');
+    if(updateAssetBtn !== null){
+        console.log(updateAssetBtn);
+        updateAssetBtn.addEventListener('click', function(){
+            APP_._LoadAnimatedModel();
+            updateAssetBtn.style.display = 'none';
+            // APP_._LoadAnimatedModelAndPlay('./assets/zombie/', 'character.fbx', 'idle.fbx', new THREE.Vector3(-12, 0, 10));
+        });
+    }
 });
 // canvas.addEventListener('click', async function(e){
 //     if (document.pointerLockElement === canvas) {
@@ -308,6 +321,8 @@ class MyWorld{
         this.initialize_();
     }
     initialize_(){
+        this._mixers = [];
+
         this.collisionConfiguration_ = new Ammo.btDefaultCollisionConfiguration();
         this.dispatcher_ = new Ammo.btCollisionDispatcher(this.collisionConfiguration_);
         this.broadphase_ = new Ammo.btDbvtBroadphase();
@@ -504,7 +519,8 @@ class MyWorld{
 
         this.countdown_ = 1.0;
         this.count_ = 0;
-        this.previousRAF_ = null;          
+        this.previousRAF_ = null;         
+         
 
         //animate();
     }
@@ -532,6 +548,13 @@ class MyWorld{
         //   this.rigidBodies_[i].mesh.position.copy(pos3);
         //   this.rigidBodies_[i].mesh.quaternion.copy(quat3);
         // }
+
+        if (this._mixers) {
+            this._mixers.map(m => m.update(timeElapsedS));
+          }
+        if(APP_._myCharacter){
+            APP_._myCharacter.Update(timeElapsedS);
+        }
 
         if(SCENECONTROLS_.fpsCamera_ !== undefined){
             SCENECONTROLS_.fpsCamera_.update(timeElapsedS);
@@ -563,6 +586,37 @@ class MyWorld{
     
         scene.add(box);
       }
+
+      _LoadAnimatedModel() {
+        const params = {
+          camera: SCENECONTROLS_.camera,
+          scene: scene
+        }
+        this._myCharacter = new BasicCharacterController(params);
+      }
+
+      _LoadAnimatedModelAndPlay(path, modelFile, animFile, offset) {
+        const loader = new FBXLoader();
+        loader.setPath(path);
+        loader.load(modelFile, (fbx) => {
+          fbx.scale.setScalar(0.1);
+          fbx.traverse(c => {
+            c.castShadow = true;
+          });
+          fbx.position.copy(offset);
+    
+          const anim = new FBXLoader();
+          anim.setPath(path);
+          anim.load(animFile, (anim) => {
+            const m = new THREE.AnimationMixer(fbx);
+            this._mixers.push(m);
+            const idle = m.clipAction(anim.animations[0]);
+            idle.play();
+          });
+          scene.add(fbx);
+        });
+      }
+    
 }
 
 class SceneControls{
