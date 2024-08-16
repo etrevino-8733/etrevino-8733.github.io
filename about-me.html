@@ -13,6 +13,13 @@
 <body>
     <div class="home-bg">
         <canvas id="tech-stack"></canvas>
+        <div class="progress-bar-container">
+            <div id="welcome-message"></div>
+            <!-- <div>Use Chrome For Best Experience</div> -->
+            <label for="progress-bar">Loading Textures... </label>
+            <div class="spinner"></div>
+            <progress id="progress-bar" value="0" max="100"></progress>
+        </div>
     </div>
     <header class="header">
         <et-top-nav nav-items='[{"name": "Home", "link": "index.html"}, {"name": "About Me", "link": "about-me.html"},{"name": "Projects", "link": "#projects"}]'>
@@ -114,7 +121,9 @@
                     let windowBottom = window.innerHeight;
                     let opacity = 1 - (sectionTop / windowBottom);
                     if(windowBottom > sectionTop){
-                        infoSection[i].querySelector('h1').style.opacity = opacity;
+                        if(infoSection[i].querySelector('h1')){
+                            infoSection[i].querySelector('h1').style.opacity = opacity;
+                        }
                     }
                 });
             }
@@ -137,7 +146,7 @@
                     }
                     let stackContainer = document.querySelector('.stack-container');
                     stackContainer.style.height = 'auto';
-                    //closeListener();
+                    closeListener();
                 }
 
                 if(windowBottom < stackItemTop){
@@ -150,11 +159,7 @@
             let transitionSeconds = Math.floor(Math.random() * (1 - 1.5) + 1.5);
             item.element.style.transition = 'transform '+ transitionSeconds + 's';
             item.element.style.transitionTimingFunction = 'ease-out';
-            item.element.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)';
-            // setTimeout(() => {
-            //     item.element.style.animation = 'pulse 2s ease-in-out infinite';
-            // }, transitionSeconds * 1000);
-            
+            item.element.style.transform = 'translate(' + 0 + 'px, ' + 0 + 'px)';            
         }
 
         async function setItems(stackItems, stackItemsCoor){
@@ -200,7 +205,7 @@
         </script>
         <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
         <script type="module" src="/scripts/tech-stack.js"></script>
-
+        <script src="/scripts/welcome-message.js"></script>
     <!-- <script type="importmap">
         {
           "imports": {

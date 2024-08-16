@@ -36,11 +36,11 @@ body{
     }
     .stack-card:hover{
         border-color: transparent;
-        transform: scale(1.05);
+        transform: scale(1.02);
     }
     .card:hover{
         border-color: transparent;
-        transform: scale(1.05);
+        transform: scale(1.02);
     }
     .card p{
         padding: 0 60px;
@@ -394,8 +394,6 @@ a:hover{
     border: none;
   }
   
-  .glow-on-hover:active {
-  }
   
   .glow-on-hover:after {
     background: var(--bg-color);

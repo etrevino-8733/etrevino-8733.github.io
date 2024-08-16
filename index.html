@@ -24,10 +24,10 @@
             <div class="spinner"></div>
             <progress id="progress-bar" value="0" max="100"></progress>
         </div>
-        <div style="display: flex; gap: 4px; z-index: 999; position: fixed; bottom: 0; left: 0;">
+        <!-- <div style="display: flex; gap: 4px; z-index: 999; position: fixed; bottom: 0; left: 0;">
             <button id="respawn" class="reset-btn" >Reset</button>
             <button id="info-btn" class="reset-btn" >More Info</button>
-        </div>
+        </div> -->
 
     </div>
 
@@ -56,27 +56,7 @@
     </script>
     <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
     <script type="module" src="/scripts/tech-stack.js"></script>
-    <script type="text/javascript">
-        let welcomeMessage;
-        window.onload = async function(){
-            welcomeMessage = document.getElementById('welcome-message');
+    <script src="/scripts/welcome-message.js">
 
-            myMessages = ['WELCOME!', 'USE CHROME FOR BEST EXPERIENCE', 'GETTING THINGS READY, PLEASE BE PATIENT...'];
-
-            for(let i = 0; i < myMessages.length; i++){
-                setTimeout(function(){
-                    welcomeMessage.style.opacity = 1;
-                    welcomeMessage.innerHTML = myMessages[i];
-                }, i * 5000);
-
-                if(i < myMessages.length - 1){
-                    setTimeout(function(){
-                        welcomeMessage.style.opacity = 0;
-                    }
-                    , i * 5000 + 3000);
-                }
-
-            }
-        }
     </script>
 </body>

@@ -1,23 +1,23 @@
-import * as THREE from '../libraries/Three/three.module.min.js';
+import * as THREE from 'three';
 import { OrbitControls } from '../libraries/Three/OrbitControls.js';
 
 import { FontLoader } from '../libraries/Three/FontLoader.js';
 import { TextGeometry } from '../libraries/Three/TextGeometry.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/loaders/GLTFLoader.js';
-
 import gsap from "../libraries/Three/gsap-core.js";
 
-import { RenderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/RenderPass.js';
-import { EffectComposer } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/EffectComposer.js';
-import { UnrealBloomPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/UnrealBloomPass.js';
-import { OutputPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/OutputPass.js';
-import { ShaderPass } from 'https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/postprocessing/ShaderPass.js';
-import { PointerLockControls } from 'https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/controls/PointerLockControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+
+
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
+import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
 
 
 let IsAboutMePage = false;
 
-let timeElapsed = 0;
 let APP_ = null;
 let SCENECONTROLS_ = null;
 let previousRAF_ = null;
@@ -91,8 +91,7 @@ loadingManager.onLoad = function(){
             progressBarContainer.style.opacity = 0;
         }, 1000);
         setTimeout(() => {
-            SCENECONTROLS_.centerCamera(10);
-            //SCENECONTROLS_.handHeldCameraEffect();
+            if(!IsAboutMePage) SCENECONTROLS_.centerCamera(10); else flickerStack();
             progressBarContainer.style.display = 'none';
         }, 2000);
     } else{
@@ -130,17 +129,20 @@ function animate(){
 
         scene.traverse(nonBloomed);
 
-        scene.traverse((object) => {
-            if (object.isPoints && object.name === 'rain') {
-                object.velocity -= 0.1 * Math.random() * 1;
-                object.position.y += object.velocity;
-                if (object.position.y < 1) {
-                    object.position.y = 100;
-                    object.velocity = 0;
-                    object.position.x = Math.random() * 200 - 100;
+        if(!IsAboutMePage){
+            scene.traverse((object) => {
+                if (object.isPoints && object.name === 'rain') {
+                    object.velocity -= 0.1 * Math.random() * 1;
+                    object.position.y += object.velocity;
+                    if (object.position.y < 1) {
+                        object.position.y = 100;
+                        object.velocity = 0;
+                        object.position.x = Math.random() * 200 - 100;
+                    }
                 }
-            }
-        });
+            });
+        }
+
 
         APP_.step_(t - previousRAF_);
         SCENECONTROLS_.composer.render();
@@ -164,7 +166,8 @@ function onWindowResize(){
 
 window.addEventListener('resize', onWindowResize, false);
 window.addEventListener('DOMContentLoaded', async() => {
-    const aboutMePage = document.querySelector('.home-bg');
+    //const aboutMePage = document.querySelector('.home-bg');
+    IsAboutMePage = document.querySelector('.home-bg') !== null;
     Ammo().then((lib) => {
         Ammo = lib;
         APP_ = new MyWorld();
@@ -172,8 +175,7 @@ window.addEventListener('DOMContentLoaded', async() => {
         //APP_.initialize();
         animate();
     });
-    if(aboutMePage !== null){
-        IsAboutMePage = true;
+    if(IsAboutMePage){
         CAM_START_POS = new THREE.Vector3(0, 0, 80);
         TARGET_START_POS = new THREE.Vector3(0, 20, 0);  
 
@@ -192,23 +194,7 @@ window.addEventListener('DOMContentLoaded', async() => {
             SCENECONTROLS_.camera.position.copy( CAM_START_POS).add( offset );
             SCENECONTROLS_.camera.lookAt( TARGET_START_POS );
     });
-    }else{        
-        const respawn = document.getElementById('respawn');
-        respawn.addEventListener('click', function(){
-                SCENECONTROLS_.centerCamera(10);
-            });
-        const moreInfoBtn = document.getElementById('info-btn');
-        moreInfoBtn.addEventListener('click', function(){
-            SCENECONTROLS_.goToComputer();
-            
-        });
     }
-
-
-
-
-
-
 });
 // canvas.addEventListener('click', async function(e){
 //     if (document.pointerLockElement === canvas) {
@@ -326,9 +312,9 @@ class MyWorld{
         this.dispatcher_ = new Ammo.btCollisionDispatcher(this.collisionConfiguration_);
         this.broadphase_ = new Ammo.btDbvtBroadphase();
         this.solver_ = new Ammo.btSequentialImpulseConstraintSolver();
-        this.physicsWorld_ = new Ammo.btDiscreteDynamicsWorld(
-            this.dispatcher_, this.broadphase_, this.solver_, this.collisionConfiguration_);
-        this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));
+        // this.physicsWorld_ = new Ammo.btDiscreteDynamicsWorld(
+        //     this.dispatcher_, this.broadphase_, this.solver_, this.collisionConfiguration_);
+        // this.physicsWorld_.setGravity(new Ammo.btVector3(0, -50, 0));
 
         // SET ENVIRONMENT
         const store = new GLTFLoader(loadingManager); store.load('../assets/scenes/247_cyberpunk_store_lowres.glb', function( gltf ) {
@@ -347,19 +333,19 @@ class MyWorld{
           scene.add( gltf.scene);
           }, undefined, function ( error ) { console.error(error); });
         
-        const laptop = new GLTFLoader(loadingManager); laptop.load('../assets/scenes/laptop_desk.glb', function( gltf ) {
-            gltf.scene.position.x = 0;
-            gltf.scene.position.y = 14;
-            gltf.scene.position.z = -18;
-            gltf.scene.rotation.y = 1.5;
-            gltf.scene.scale.set(20, 20, 20);
-            gltf.scene.name = "laptop";
-            gltf.scene.traverse( function( node ) {
-                node.castShadow = true;
-                node.receiveShadow = true;
-            });
-            scene.add( gltf.scene);
-            }, undefined, function ( error ) { console.error(error); });
+        // const laptop = new GLTFLoader(loadingManager); laptop.load('../assets/scenes/laptop_desk.glb', function( gltf ) {
+        //     gltf.scene.position.x = 0;
+        //     gltf.scene.position.y = 14;
+        //     gltf.scene.position.z = -18;
+        //     gltf.scene.rotation.y = 1.5;
+        //     gltf.scene.scale.set(20, 20, 20);
+        //     gltf.scene.name = "laptop";
+        //     gltf.scene.traverse( function( node ) {
+        //         node.castShadow = true;
+        //         node.receiveShadow = true;
+        //     });
+        //     scene.add( gltf.scene);
+        //     }, undefined, function ( error ) { console.error(error); });
 
         /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(400, 1, 200);
@@ -368,11 +354,11 @@ class MyWorld{
         plane.receiveShadow = true;
         scene.add( plane );
 
-        const rbGround = new RigidBody();
-        rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(200, 1, 100));
-        rbGround.setRestitution(0.99);
-        this.physicsWorld_.addRigidBody(rbGround.body_);
-        this.rigidBodies_ = [];
+        // const rbGround = new RigidBody();
+        // rbGround.createBox(0, new THREE.Vector3(0, 0, 0), plane.quaternion, new THREE.Vector3(200, 1, 100));
+        // rbGround.setRestitution(0.99);
+        // this.physicsWorld_.addRigidBody(rbGround.body_);
+        // this.rigidBodies_ = [];
 
         function addRain() {
             const geometry = new THREE.SphereGeometry(.05, 10, 10);
@@ -392,8 +378,10 @@ class MyWorld{
             scene.add(rainDrop)
           
           }
-          
-        Array(500).fill().forEach(addRain);
+        
+        if(!IsAboutMePage){
+            Array(500).fill().forEach(addRain);
+        }
         const stack = [
             {"tech": ["SQL Server", "Mongo DB","Azure", "Docker"]},
             {"tech": [".Net Core", "asp.net", "Angular", "NX"]},            
@@ -489,26 +477,26 @@ class MyWorld{
             topText.name = 'topText';
             scene.add(topText);
 
-            const rbTopText = new RigidBody();
-            rbTopText.createText(0, topText.position, topText.quaternion, new THREE.Vector3(logoSize * 2, logoSize, 1));
-            rbTopText.setRestitution(0.125);
-            rbTopText.setFriction(10);
-            rbTopText.setRollingFriction(10);
+            // const rbTopText = new RigidBody();
+            // rbTopText.createText(0, topText.position, topText.quaternion, new THREE.Vector3(logoSize * 2, logoSize, 1));
+            // rbTopText.setRestitution(0.125);
+            // rbTopText.setFriction(10);
+            // rbTopText.setRollingFriction(10);
 
-            const rbTextBottom = new RigidBody();
-            rbTextBottom.createText(0, textBottom.position, textBottom.quaternion, new THREE.Vector3(logoSize * 4, logoSize, 1));
-            rbTextBottom.setRestitution(0.125);
-            rbTextBottom.setFriction(10);
-            rbTextBottom.setRollingFriction(10);
+            // const rbTextBottom = new RigidBody();
+            // rbTextBottom.createText(0, textBottom.position, textBottom.quaternion, new THREE.Vector3(logoSize * 4, logoSize, 1));
+            // rbTextBottom.setRestitution(0.125);
+            // rbTextBottom.setFriction(10);
+            // rbTextBottom.setRollingFriction(10);
 
 
-            textBottom.userData.physicsBody = rbTextBottom.body_ ;
-            topText.userData.physicsBody = rbTopText.body_;
+            // textBottom.userData.physicsBody = rbTextBottom.body_ ;
+            // topText.userData.physicsBody = rbTopText.body_;
 
-            APP_.physicsWorld_.addRigidBody(rbTopText.body_);
-            APP_.rigidBodies_.push({ id: "test", mesh: topText, rigidBody: rbTopText });
-            APP_.physicsWorld_.addRigidBody(rbTextBottom.body_);
-            APP_.rigidBodies_.push({ mesh: textBottom, rigidBody: rbTextBottom });
+            // APP_.physicsWorld_.addRigidBody(rbTopText.body_);
+            // APP_.rigidBodies_.push({ id: "test", mesh: topText, rigidBody: rbTopText });
+            // APP_.physicsWorld_.addRigidBody(rbTextBottom.body_);
+            // APP_.rigidBodies_.push({ mesh: textBottom, rigidBody: rbTextBottom });
         });
 
 
@@ -525,25 +513,25 @@ class MyWorld{
         const timeElapsedS = timeElapsed * 0.001;
 
         this.countdown_ -= timeElapsedS;
-        this.physicsWorld_.stepSimulation(timeElapsedS, 10);
+        // this.physicsWorld_.stepSimulation(timeElapsedS, 10);
 
 
-        for (let i = 0; i < this.rigidBodies_.length; ++i) {
-            if(this.rigidBodies_[i].mesh.position.y < -10){
-                scene.remove(this.rigidBodies_[i].mesh);
-                this.physicsWorld_.removeRigidBody(this.rigidBodies_[i].rigidBody.body_);
-                this.rigidBodies_.splice(i, 1);
-                i--;
-            }
-          this.rigidBodies_[i].rigidBody.motionState_.getWorldTransform(this.tmpTransform_);
-          const pos = this.tmpTransform_.getOrigin();
-          const quat = this.tmpTransform_.getRotation();
-          const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
-          const quat3 = new THREE.Quaternion(quat.x(), quat.y(), quat.z(), quat.w());
+        // for (let i = 0; i < this.rigidBodies_.length; ++i) {
+        //     if(this.rigidBodies_[i].mesh.position.y < -10){
+        //         scene.remove(this.rigidBodies_[i].mesh);
+        //         this.physicsWorld_.removeRigidBody(this.rigidBodies_[i].rigidBody.body_);
+        //         this.rigidBodies_.splice(i, 1);
+        //         i--;
+        //     }
+        //   this.rigidBodies_[i].rigidBody.motionState_.getWorldTransform(this.tmpTransform_);
+        //   const pos = this.tmpTransform_.getOrigin();
+        //   const quat = this.tmpTransform_.getRotation();
+        //   const pos3 = new THREE.Vector3(pos.x(), pos.y(), pos.z());
+        //   const quat3 = new THREE.Quaternion(quat.x(), quat.y(), quat.z(), quat.w());
     
-          this.rigidBodies_[i].mesh.position.copy(pos3);
-          this.rigidBodies_[i].mesh.quaternion.copy(quat3);
-        }
+        //   this.rigidBodies_[i].mesh.position.copy(pos3);
+        //   this.rigidBodies_[i].mesh.quaternion.copy(quat3);
+        // }
 
         if(SCENECONTROLS_.fpsCamera_ !== undefined){
             SCENECONTROLS_.fpsCamera_.update(timeElapsedS);
@@ -596,6 +584,7 @@ class SceneControls{
         this.controls = new OrbitControls(this.camera, renderer.domElement);
         if(IsAboutMePage){
             this.controls.enabled = false;
+            this.handheldEffectActive = false;
         }
 
         
@@ -672,7 +661,7 @@ class SceneControls{
             this.setScene(CAM_START_POS.x, CAM_START_POS.y, CAM_START_POS.z + 40, 25, TARGET_START_POS.y, TARGET_START_POS.z, seconds * 0.4); 
         }, 0);
         setTimeout(() => {
-            this.setScene(-10, 10, 5, -5, 10, -2, seconds * 0.2);
+            this.setScene(-10, 20, 5, -5, 20, -2, seconds * 0.2);
         }, (ms * .4) - 500);
         setTimeout(() => {
             this.setScene(0, 18, window.innerWidth > 600 ? 30 : 75, 0, 18, 0, seconds * 0.4);
