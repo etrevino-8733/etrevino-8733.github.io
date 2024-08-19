@@ -126,20 +126,20 @@
 
 
             // Sections animations
-            let infoSection = document.querySelectorAll('.info-section');
-            for(let i = 0; i < infoSection.length; i++){
-                document.addEventListener('scroll', (e) => {
-                    let section = infoSection[i];
-                    let sectionTop = section.getBoundingClientRect().top;
-                    let windowBottom = window.innerHeight;
-                    let opacity = 1 - (sectionTop / windowBottom);
-                    if(windowBottom > sectionTop){
-                        if(infoSection[i].querySelector('h1')){
-                            infoSection[i].querySelector('h1').style.opacity = opacity;
-                        }
-                    }
-                });
-            }
+            // let infoSection = document.querySelectorAll('.info-section');
+            // for(let i = 0; i < infoSection.length; i++){
+            //     document.addEventListener('scroll', (e) => {
+            //         let section = infoSection[i];
+            //         let sectionTop = section.getBoundingClientRect().top;
+            //         let windowBottom = window.innerHeight;
+            //         let opacity = 1 - (sectionTop / windowBottom);
+            //         if(windowBottom > sectionTop){
+            //             if(infoSection[i].querySelector('h1')){
+            //                 infoSection[i].querySelector('h1').style.opacity = opacity;
+            //             }
+            //         }
+            //     });
+            // }
 
             
             trickleStackEventListener('scroll', (e, closeListener) => {
