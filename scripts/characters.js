@@ -59,6 +59,7 @@ export class BasicCharacterController {
       this._manager = new THREE.LoadingManager();
       this._manager.onLoad = () => {
         this._stateMachine.SetState('idle');
+        this.ReleaseMonster();
       };
 
       const _OnLoad = (animName, anim) => {

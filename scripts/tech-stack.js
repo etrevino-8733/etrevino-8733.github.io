@@ -121,7 +121,6 @@ loadingManager.onLoad = function(){
 
   hiResLoader.onLoad = function(){
     scene.remove(scene.children.find((child) => child.name === 'coffeeShop_lores'));
-    APP_._LoadAnimatedModel();
   }
  }
 
@@ -176,14 +175,15 @@ window.addEventListener('DOMContentLoaded', async() => {
         Ammo = lib;
         APP_ = new MyWorld();
         SCENECONTROLS_ = new SceneControls();
+        //APP_.initialize();
         animate();
     });
-
     if(IsAboutMePage){
         CAM_START_POS = new THREE.Vector3(0, 0, 80);
         TARGET_START_POS = new THREE.Vector3(0, 20, 0);  
+
         const offset = new THREE.Vector3();
-        const distance = 20;    
+        const distance = 20;
 
         document.addEventListener('scroll', function(){
             // SCENECONTROLS_.camera.position.x++;
@@ -196,16 +196,17 @@ window.addEventListener('DOMContentLoaded', async() => {
           
             SCENECONTROLS_.camera.position.copy( CAM_START_POS).add( offset );
             SCENECONTROLS_.camera.lookAt( TARGET_START_POS );
+    });
+    }
+
+    let updateAssetBtn = document.querySelector('.release-the-moster');
+    if(updateAssetBtn !== null){
+        console.log(updateAssetBtn);
+        updateAssetBtn.addEventListener('click', function(){
+            APP_._LoadAnimatedModel();
+            updateAssetBtn.style.display = 'none';
+            // APP_._LoadAnimatedModelAndPlay('./assets/zombie/', 'character.fbx', 'idle.fbx', new THREE.Vector3(-12, 0, 10));
         });
-        let updateAssetBtn = document.querySelector('.release-the-moster');
-        if(updateAssetBtn !== null){
-            console.log(updateAssetBtn);
-            updateAssetBtn.addEventListener('click', function(){
-                updateAssetBtn.style.display = 'none';
-                APP_._myCharacter.ReleaseMonster();
-                // APP_._LoadAnimatedModelAndPlay('./assets/zombie/', 'character.fbx', 'idle.fbx', new THREE.Vector3(-12, 0, 10));
-            });
-        }
     }
 });
 // canvas.addEventListener('click', async function(e){
