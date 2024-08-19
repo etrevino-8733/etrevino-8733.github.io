@@ -51,14 +51,14 @@ export class BasicCharacterController {
         }});
 
       this._target = fbx;
-      this._target.position.set(25, 1, 25);
+      this._target.position.set(10, 1, -20);
       this._params.scene.add(this._target);
 
       this._mixer = new THREE.AnimationMixer(this._target);
 
       this._manager = new THREE.LoadingManager();
       this._manager.onLoad = () => {
-        this._stateMachine.SetState('dance');
+        this._stateMachine.SetState('idle');
       };
 
       const _OnLoad = (animName, anim) => {
@@ -73,12 +73,18 @@ export class BasicCharacterController {
 
       const loader = new FBXLoader(this._manager);
       loader.setPath('../assets/monster/');
-    //   loader.load('walk.fbx', (a) => { _OnLoad('walk', a); });
+      loader.load('walk.fbx', (a) => { _OnLoad('walk', a); });
     //   loader.load('walk-back.fbx', (a) => { _OnLoad('walk-back', a); });
-    //   loader.load('run.fbx', (a) => { _OnLoad('run', a); });
+      loader.load('run.fbx', (a) => { _OnLoad('run', a); });
       loader.load('idle.fbx', (a) => { _OnLoad('idle', a); });
       loader.load('dance.fbx', (a) => { _OnLoad('dance', a); });
     });
+
+    // setTimeout(() => {
+    //   this._stateMachine.SetState('walk');
+    // }, 3000);
+
+
   }
 
   Update(timeInSeconds) {
@@ -156,6 +162,20 @@ export class BasicCharacterController {
       this._mixer.update(timeInSeconds);
     }
   }
+
+  ReleaseMonster() {
+    this._input._keys.forward = true;
+    this._input._keys.shift = true;
+    this._input._keys.space = false;
+
+    setTimeout(() => {
+      this._input._keys.forward = false;
+      this._input._keys.shift = false;
+    }, 1500);
+    setTimeout(() => {
+      this._stateMachine.SetState('dance');
+    }, 2000);
+  }
 };
 
 
@@ -173,8 +193,8 @@ class BasicCharacterControllerInput {
         space: false,
         shift: false,
       };
-      document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
-      document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
+      // document.addEventListener('keydown', (e) => this._onKeyDown(e), false);
+      // document.addEventListener('keyup', (e) => this._onKeyUp(e), false);
     }
   
     _onKeyDown(event) {
@@ -331,8 +351,13 @@ class BasicCharacterControllerInput {
       this._Cleanup();
     }
   
-    Update(_) {
-    }
+    // Update(timeElapsed, input) {
+    //   if (input._keys.space) {
+    //     this._parent.SetState('dance');
+    //   }
+  
+    //   this._parent.SetState('idle');
+    // }
   };
   
   
@@ -423,7 +448,7 @@ class BasicCharacterControllerInput {
         return;
       }
   
-      this._parent.SetState('idle');
+      this._parent.SetState('walk');
     }
   };
   

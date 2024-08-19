@@ -15,7 +15,6 @@
         <canvas id="tech-stack"></canvas>
         <div class="progress-bar-container">
             <div id="welcome-message"></div>
-            <!-- <div>Use Chrome For Best Experience</div> -->
             <label for="progress-bar">Loading Textures... </label>
             <div class="spinner"></div>
             <progress id="progress-bar" value="0" max="100"></progress>
@@ -94,7 +93,7 @@
     </section>
 
     <section class="info-section">
-        <button style="z-index: 99999; font-size: xx-large;" class="release-the-moster et-button">
+        <button style="font-size: xx-large;" class="release-the-moster danger-button">
             DO NOT CLICK!
         </button>
     </section>
@@ -116,6 +115,14 @@
                     }
                 document.addEventListener(event, wrapper);
             }
+
+            document.querySelector('.danger-button').addEventListener('mouseover', (e) => {
+                console.log('hover');
+                e.target.innerHTML = "DON'T DO IT!";
+            });
+            document.querySelector('.danger-button').addEventListener('mouseout', (e) => {
+                e.target.innerHTML = "DO NOT CLICK!";
+            });
 
 
             // Sections animations
@@ -212,30 +219,4 @@
         <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
         <script type="module" src="/scripts/tech-stack.js"></script>
         <script src="/scripts/welcome-message.js"></script>
-    <!-- <script type="importmap">
-        {
-          "imports": {
-            "three": "https://cdn.jsdelivr.net/npm/three@0.164.1/build/three.module.js",
-            "cannon": "https://cdn.jsdelivr.net/npm/cannon@0.6.2/build/cannon.min.js",
-            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
-          }
-        }
-    </script>
-    <script id="vertexshader" type="vertex">
-        varying vec2 vUv;
-        void main() {
-            vUv = uv;
-            gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
-        }
-    </script>
-    <script id="fragmentshader" type="fragment">
-        uniform sampler2D baseTexture;
-        uniform sampler2D bloomTexture;
-        varying vec2 vUv;
-        void main() {
-            gl_FragColor = (texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ));
-        }
-    </script>
-    <script src="https://cdn.jsdelivr.net/gh/kripken/ammo.js@HEAD/builds/ammo.js"></script>
-    <script type="module" src="/scripts/tech-stack.js"></script> -->
 </body>
