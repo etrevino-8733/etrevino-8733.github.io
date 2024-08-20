@@ -32,19 +32,19 @@
     <script type="importmap">
         {
           "imports": {
-            "three": "../libraries/Three/three.module.min.js",
+            "three": "https://cdn.jsdelivr.net/npm/three@0.167.1/+esm",
             "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.164.1/examples/jsm/"
           }
         }
     </script>
-    <script id="vertexshader" type="vertex">
+    <script defer id="vertexshader" type="vertex">
         varying vec2 vUv;
         void main() {
             vUv = uv;
             gl_Position = projectionMatrix * modelViewMatrix * vec4( position, 1.0 );
         }
     </script>
-    <script id="fragmentshader" type="fragment">
+    <script defer id="fragmentshader" type="fragment">
         uniform sampler2D baseTexture;
         uniform sampler2D bloomTexture;
         varying vec2 vUv;
@@ -52,8 +52,8 @@
             gl_FragColor = (texture2D( baseTexture, vUv ) + vec4( 1.0 ) * texture2D( bloomTexture, vUv ));
         }
     </script>
-    <script type="module" src="/scripts/tech-stack.js"></script>
-    <script src="/scripts/welcome-message.js">
+    <script defer type="module" src="/scripts/tech-stack.js"></script>
+    <script defer src="/scripts/welcome-message.js">
 
     </script>
 </body>
