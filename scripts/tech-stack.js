@@ -114,14 +114,15 @@ loadingManager.onLoad = function(){
   scene.add( gltf.scene);
   }, undefined, function ( error ) { console.error(error); });
 
-  hiResLoader.onLoad = function(){
-    scene.remove(scene.children.find((child) => child.name === 'coffeeShop_lores'));
-
-    if(IsAboutMePage)
+  if(IsAboutMePage)
     {
         APP_._LoadAnimatedModel();
+    }else{
+        hiResLoader.onLoad = function(){
+            scene.remove(scene.children.find((child) => child.name === 'coffeeShop_lores'));
+            }
     }
-  }
+
  }
 
 function animate(){
