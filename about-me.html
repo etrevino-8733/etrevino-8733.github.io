@@ -151,9 +151,7 @@
 
                 if(windowBottom > stackItemTop){
                     for(let key in stackItemsCoor){
-                        setTimeout(() => {
-                            moveItems(stackItemsCoor[key]);
-                        });
+                        moveItems(stackItemsCoor[key]);
                     }
                     let stackContainer = document.querySelector('.stack-container');
                     stackContainer.style.height = 'auto';

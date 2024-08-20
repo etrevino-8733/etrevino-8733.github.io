@@ -87,13 +87,11 @@ const progressBarContainer = document.querySelector('.progress-bar-container');
 loadingManager.onLoad = function(){
 
     if(progressBarContainer !== null){
-        setTimeout(() => {
-            progressBarContainer.style.opacity = 0;
-        }, 1000);
+        progressBarContainer.style.opacity = 0;
         setTimeout(() => {
             if(!IsAboutMePage) SCENECONTROLS_.centerCamera(10); else flickerStack();
             progressBarContainer.style.display = 'none';
-        }, 2000);
+        }, 1000);
     } else{
         flickerStack();
     }
@@ -216,20 +214,6 @@ class MyWorld{
           } );
           scene.add( gltf.scene);
           }, undefined, function ( error ) { console.error(error); });
-        
-        // const laptop = new GLTFLoader(loadingManager); laptop.load('../assets/scenes/laptop_desk.glb', function( gltf ) {
-        //     gltf.scene.position.x = 0;
-        //     gltf.scene.position.y = 14;
-        //     gltf.scene.position.z = -18;
-        //     gltf.scene.rotation.y = 1.5;
-        //     gltf.scene.scale.set(20, 20, 20);
-        //     gltf.scene.name = "laptop";
-        //     gltf.scene.traverse( function( node ) {
-        //         node.castShadow = true;
-        //         node.receiveShadow = true;
-        //     });
-        //     scene.add( gltf.scene);
-        //     }, undefined, function ( error ) { console.error(error); });
 
         /// SET GROUND
         const groundGeometry = new THREE.BoxGeometry(400, 1, 200);
@@ -559,13 +543,7 @@ class SceneControls{
             duration: seconds,
             ease: easeOption,
               onUpdate: function(){
-                //controls.update();
               }
-          });
-        return new Promise((resolve) => {
-            setTimeout(() => {
-                resolve(true);
-            }, seconds * 1000);
           });
     }
 
@@ -584,12 +562,6 @@ class SceneControls{
             this.handheldEffectLoop -= 0.01;
             this.handheldEffectIncrement = -0.000001;
         }
-        
-        // this.camera.position.x += Math.sin(this.handheldEffectIncrement * 10) * .5;
-        // this.camera.position.y += (Math.random() * 10) * this.handheldEffectIncrement;
-        // let x = Math.sin(this.handheldEffectLoop) * .01;
-        // let y = Math.sin(this.handheldEffectLoop) * .01;
-        // let z = Math.sin(this.handheldEffectLoop) * .01;
 
         let x = Math.sin(this.handheldEffectLoop) * .001;
         let y = Math.sin(this.handheldEffectLoop) * .001;
@@ -598,37 +570,6 @@ class SceneControls{
         this.camera.position.x += ((Math.random(), 10) * x);
         this.camera.position.y += ((Math.random(), 10) * y);
         this.camera.position.z += ((Math.random(), 10) * z);
-
-        // this.camera.position.x += this.handheldEffectIncrement * .5;
-        // this.camera.position.y += this.handheldEffectIncrement * .5;
-    }
-
-    // async setScene2(cx, cy, cz,tx ,ty ,tz, duration){
-    //     const steps = duration * 1000;
-    //     let startCx = this.camera.position.x / steps;
-    //     let startCy = this.camera.position.y / steps;
-    //     let startCz = this.camera.position.z / steps;
-    //     let startTx = this.controls.target.x / steps;
-    //     let startTy = this.controls.target.y / steps;
-    //     let startTz = this.controls.target.z / steps;
-
-
-    //     for(let i = 1; i < steps * 1000; i++){
-    //         let cameraPos = new THREE.Vector3(startCx * i, startCy * i, startCz * i);
-    //         let targetPos = new THREE.Vector3(startTx * i, startTy * i, startTz * i);
-    //         console.log("setScene2", i, cameraPos);
-    //         this.camera.position.copy(cameraPos);
-    //     }
-    // }
-
-    async goToComputer(){
-        await this.setScene(0, 18, 5, 0, 18, 0, 2);
-        // await this.setScene2(0, 18, 5, -5, 18, 0, 2);
-        // await this.setScene2(-20, 18, -10, -25, 18, -15, 4);
-        // await this.setScene(-10, 18, -20, 10, 18, 10, 4, "circ.inOut");
-        // await this.setScene(0, 18, -5, -5, 18, 0, 2, "circ.inOut");
-        //await this.setScene(0, 18, -5, -5, 18, 0, 2);
-
     }
 
     setFpsCamera(){
