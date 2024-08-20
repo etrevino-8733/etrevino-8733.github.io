@@ -116,6 +116,11 @@ loadingManager.onLoad = function(){
 
   hiResLoader.onLoad = function(){
     scene.remove(scene.children.find((child) => child.name === 'coffeeShop_lores'));
+
+    if(IsAboutMePage)
+    {
+        APP_._LoadAnimatedModel();
+    }
   }
  }
 
@@ -186,7 +191,8 @@ window.addEventListener('DOMContentLoaded', async() => {
     if(updateAssetBtn !== null){
         console.log(updateAssetBtn);
         updateAssetBtn.addEventListener('click', function(){
-            APP_._LoadAnimatedModel();
+            //APP_._LoadAnimatedModel();
+            APP_._myCharacter.ReleaseMonster();
             updateAssetBtn.style.display = 'none';
         });
     }
